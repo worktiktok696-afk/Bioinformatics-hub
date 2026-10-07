@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3454d1">
+<meta name="description" content="DNA and protein analysis tools for bioinformatics students, with step-by-step animations.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Sequence Toolkit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#eef1f5;--panel:#fff;--ink:#16222f;--mute:#5d6b7b;--line:#d8dee6;--side:#0f1c2c;--sideink:#b9c6d6;--accent:#0e7490;--A:#1a7f4b;--T:#c2362f;--G:#a35f00;--C:#1f5fbf;--soft:#f6f8fb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b131d;--panel:#122030;--ink:#e6edf5;--mute:#93a4b8;--line:#243649;--side:#08101a;--accent:#4cc3df;--A:#4ccf8a;--T:#ff7b72;--G:#f0b429;--C:#6ea8ff;--soft:#0f1b29}}
+:root[data-theme="dark"]{--bg:#0b131d;--panel:#122030;--ink:#e6edf5;--mute:#93a4b8;--line:#243649;--side:#08101a;--accent:#4cc3df;--A:#4ccf8a;--T:#ff7b72;--G:#f0b429;--C:#6ea8ff;--soft:#0f1b29}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--side);color:#fff;padding:12px 20px;display:flex;align-items:baseline;gap:12px}
+.top b{font-size:1.1rem;font-weight:600}.top span{color:var(--sideink);font-size:.88rem}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 48px)}
+.side{background:var(--side);padding:14px 0 30px}
+.side h3{margin:16px 20px 6px;font-size:.78rem;font-weight:600;color:#7c8da3;letter-spacing:.04em}
+.side a{display:block;padding:8px 20px;color:var(--sideink);text-decoration:none;border-left:3px solid transparent}
+.side a:hover{color:#fff}.side a.on{color:#fff;background:rgba(255,255,255,.07);border-left-color:var(--accent)}
+main{padding:24px;min-width:0;max-width:980px;width:100%}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 18px;margin-bottom:18px}
+.panel h2{margin:0 0 4px;font-size:1.15rem;font-weight:600}
+.panel p.d{margin:0 0 12px;color:var(--mute);max-width:70ch}
+.lab{font-weight:600;font-size:.9rem;display:block;margin-bottom:6px}
+textarea{width:100%;min-height:96px;resize:vertical;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--soft);color:var(--ink);font:14px/1.5 "IBM Plex Mono",ui-monospace,Menlo,monospace}
+button,.btn{font:inherit;font-size:.9rem;cursor:pointer;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:5px 12px}
+button:hover,.btn:hover{border-color:var(--accent)}
+button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.msg{font-size:.88rem;color:var(--mute);margin-left:4px}.msg.err{color:var(--T)}
+.seq{font:14px/1.7 "IBM Plex Mono",ui-monospace,Menlo,monospace;word-break:break-all;overflow-wrap:anywhere;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:10px 12px;max-height:240px;overflow:auto}
+.sec{margin:0 0 6px;font-weight:600;font-size:.9rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.scroll{overflow-x:auto}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--mute);font-size:.82rem;white-space:nowrap}
+td.m{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:16px}
+.stats div{background:var(--panel);padding:10px 12px}.stats small{display:block;color:var(--mute);font-size:.78rem}.stats b{font:500 1.25rem "IBM Plex Mono",ui-monospace,monospace}
+.comp{display:flex;height:12px;border-radius:2px;overflow:hidden;margin:6px 0 8px}
+.comp i{display:block}.legend{display:flex;gap:16px;font:13px "IBM Plex Mono",ui-monospace,monospace;flex-wrap:wrap}
+.A{color:var(--A)}.T{color:var(--T)}.G{color:var(--G)}.C{color:var(--C)}
+.bgA{background:var(--A)}.bgT{background:var(--T)}.bgG{background:var(--G)}.bgC{background:var(--C)}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px;max-width:75ch}
+.empty{color:var(--mute)}
+details summary{cursor:pointer;color:var(--accent)}details .seq{margin-top:6px}
+@media (max-width:780px){.app{grid-template-columns:1fr}.side{display:flex;overflow-x:auto;padding:0;white-space:nowrap}.side h3{display:none}.side a{border-left:0;border-bottom:3px solid transparent;padding:11px 14px}.side a.on{border-bottom-color:var(--accent)}main{padding:14px}}
+.dg{display:block;width:100%;height:auto;max-width:760px}.dg text{font:600 15px "IBM Plex Mono",ui-monospace,monospace;fill:var(--ink)}.dg .lb{font:12px "IBM Plex Sans",system-ui,sans-serif;fill:var(--mute)}.dg .ln{stroke:var(--mute)}.dg .hl{fill:var(--soft);stroke:var(--T)}.dg .bx{fill:var(--soft);stroke:var(--line)}.dg .orfp{fill:var(--accent)}.dg .orfm{fill:var(--G)}.dg .cut{stroke:var(--T);stroke-width:2}.dg .gcl{fill:none;stroke:var(--accent);stroke-width:2}.dg .bar{fill:var(--accent)}.dg .A{fill:var(--A)}.dg .T{fill:var(--T)}.dg .G{fill:var(--G)}.dg .C{fill:var(--C)}
+.how ol{margin:6px 0 10px;padding-left:20px}.how li{margin:5px 0}.how code{font:13px "IBM Plex Mono",ui-monospace,monospace;background:var(--soft);padding:1px 5px;border-radius:3px;word-break:break-all}pre.code{background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:10px 12px;overflow:auto;font:13px/1.5 "IBM Plex Mono",ui-monospace,monospace;margin:8px 0 0}
+.dg .tile{fill-opacity:.16;stroke-width:1.5}.dg .tA{fill:var(--A);stroke:var(--A)}.dg .tT,.dg .tU{fill:var(--T);stroke:var(--T)}.dg .tG{fill:var(--G);stroke:var(--G)}.dg .tC{fill:var(--C);stroke:var(--C)}.dg .tN{fill:var(--mute);stroke:var(--mute)}.dg .U{fill:var(--T)}
+.dg .cur{stroke-width:3.5;fill-opacity:.4}.dg .dim{opacity:.35}.dg .aa{fill:var(--soft);stroke:var(--accent);stroke-width:1.5}.dg .win{fill:none;stroke:var(--accent);stroke-width:3}.dg .win.ok{stroke:var(--A)}.dg .okc{fill:var(--A)}.dg .cb{fill:var(--soft);stroke:var(--line);stroke-width:1.5}.dg .cb.reg{fill:var(--accent);fill-opacity:.2;stroke:var(--accent)}.dg .cb.cur{stroke:var(--ink);stroke-width:3}.dg .big{font:700 20px "IBM Plex Mono",ui-monospace,monospace;fill:var(--ink)}
+.pcap{margin:8px 0 0;min-height:2.8em}.pctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.pctl input[type=range]{flex:1;min-width:110px}.pctl select{padding:5px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);font:inherit;font-size:.9rem}
+
+:root{--bg:#f3f6fb;--accent:#3454d1;--line:#dbe3ee;--soft:#f6f8fc;--tA:#1f8a50;--tT:#cf3a33;--tG:#b86a00;--tC:#2c64c4}
+body{font-size:16px}
+.top{background:var(--panel);color:var(--ink);border-bottom:1px solid var(--line)}.top b{font-size:1.25rem}.top span{color:var(--mute)}
+.side{background:var(--panel);border-right:1px solid var(--line);padding-top:10px}.side h3{color:var(--mute)}
+.side a{color:var(--ink);border-radius:0}.side a:hover{background:var(--soft);color:var(--ink)}.side a.on{background:var(--soft);color:var(--accent);font-weight:600;border-left-color:var(--accent)}
+main{padding:28px}.panel{border-radius:12px;padding:20px 22px;box-shadow:0 1px 3px rgba(20,40,90,.07)}.panel h2{font-size:1.35rem}.panel p.d{font-size:1rem}
+.dg .tile{fill-opacity:1;stroke:none}.dg .tA{fill:var(--tA)}.dg .tT,.dg .tU{fill:var(--tT)}.dg .tG{fill:var(--tG)}.dg .tC{fill:var(--tC)}.dg .tN{fill:var(--mute)}
+.dg .tt{fill:#fff;font:700 18px "IBM Plex Mono",ui-monospace,monospace}
+.dg .cur{stroke:var(--ink);stroke-width:4;fill-opacity:1}.dg .dim{opacity:.3}
+.dg .lb{font-size:13px}.dg .big{font-size:26px}.dg .ab{font-size:18px}.dg .cd{font-size:13px}
+.pl .dg{max-width:520px;margin:0 auto}
+.pcap{font-size:1.05rem;line-height:1.5;min-height:3.4em}
+.pctl button{padding:9px 15px;font-size:1rem}
+.chips{display:flex;gap:8px 16px;flex-wrap:wrap;margin:12px 0 0;font-size:.88rem;color:var(--mute)}.chip{display:inline-flex;align-items:center;gap:6px}.chip i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.mx{width:auto}.mx td,.mx th{text-align:center;padding:5px 10px;font:13px "IBM Plex Mono",ui-monospace,monospace}.mx td.pth{background:var(--accent);color:#fff;border-radius:3px}.mx small{opacity:.7}
+.inp{padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--soft);color:var(--ink);font:inherit;font-size:.9rem}
+.aiout,.msg-user,.msg-assistant{white-space:pre-wrap;line-height:1.6}.aiout{margin-top:12px}
+.chat{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:12px;min-height:160px;max-height:440px;overflow:auto}
+.msg-user,.msg-assistant{padding:9px 13px;border-radius:12px;margin:8px 0;max-width:92%}.msg-user{background:var(--accent);color:#fff;margin-left:auto}.msg-assistant{background:var(--panel);border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="top"><b>Sequence Toolkit</b><span>DNA and protein analysis</span></div>
+<div class="app">
+<aside class="side" id="side"></aside>
+<main>
+<div class="panel">
+ <label class="lab" for="seq">DNA sequence (plain text or FASTA)</label>
+ <textarea id="seq" spellcheck="false" placeholder="Paste a sequence, or upload a FASTA file"></textarea>
+ <div class="bar"><button id="ex" type="button">Load example</button><button id="clr" type="button">Clear</button><button id="up" type="button">Upload FASTA</button><input id="file" type="file" accept=".fa,.fasta,.fna,.txt" hidden><span class="msg" id="msg" role="status"></span></div>
+</div>
+<div id="view"></div>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const AA="FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",IDX={T:0,C:1,A:2,G:3},COMP={A:'T',T:'A',G:'C',C:'G',N:'N'};
+const MASS={G:57.0519,A:71.0788,S:87.0782,P:97.1167,V:99.1326,T:101.1051,C:103.1388,L:113.1594,I:113.1594,N:114.1038,D:115.0886,Q:128.1307,K:128.1741,E:129.1155,M:131.1926,H:137.1411,F:147.1766,R:156.1875,Y:163.176,W:186.2132};
+const ENZ=[['EcoRI','GAATTC',1],['BamHI','GGATCC',1],['HindIII','AAGCTT',1],['XhoI','CTCGAG',1],['XbaI','TCTAGA',1],['NdeI','CATATG',2],['NotI','GCGGCCGC',2],['SmaI','CCCGGG',3],['EcoRV','GATATC',3],['KpnI','GGTACC',5],['SacI','GAGCTC',5],['PstI','CTGCAG',5]];
+const GROUPS=[['DNA',[['overview','Overview'],['rc','Reverse complement'],['tx','Transcription']]],['Translation',[['tl','Six-frame translation'],['orf','ORF finder']]],['Alignment',[['align','Pairwise alignment']]],['Protein',[['prot','Protein properties']]],['Cloning',[['re','Restriction sites']]]];
+const col=s=>s.replace(/[ACGT]/g,b=>'<span class="'+b+'">'+b+'</span>');
+const rcOf=s=>[...s].reverse().map(b=>COMP[b]).join('');
+const tr=(s,f=0)=>{let p='';for(let i=f;i+2<s.length;i+=3){const c=s.slice(i,i+3);p+=c.includes('N')?'X':AA[IDX[c[0]]*16+IDX[c[1]]*4+IDX[c[2]]]}return p};
+let P='',cur='overview',S=null,CP={};
+function parse(){const raw=$('seq').value,body=raw.split('\n').filter(l=>!l.trim().startsWith('>')).join('');
+ const s=body.toUpperCase().replace(/[\s\d]/g,'').replace(/U/g,'T');const bad=[...new Set(s.replace(/[ACGTN]/g,'').split(''))];
+ return {s,bad,hadU:/U/i.test(body)}}
+function cnt(s){const c={A:0,T:0,G:0,C:0,N:0};for(const b of s)c[b]++;return c}
+const copyBtn=(k,t)=>{CP[k]=t;return '<button type="button" data-copy="'+k+'">Copy</button>'};
+const head=(t,d)=>'<h2>'+t+'</h2><p class="d">'+d+'</p>';
+const panel=(h,b)=>'<div class="panel">'+h+b+'</div>';
+function mw(p){let m=18.01524;for(const a of p)m+=MASS[a]||0;return m}
+function orfs(s,min){const out=[],n=s.length;[['+',s],['-',rcOf(s)]].forEach(([st,q])=>{for(let f=0;f<3;f++){let a=-1;for(let i=f;i+2<n;i+=3){const c=q.slice(i,i+3),aa=c.includes('N')?'X':AA[IDX[c[0]]*16+IDX[c[1]]*4+IDX[c[2]]];
+ if(a<0&&c==='ATG')a=i;else if(a>=0&&aa==='*'){const len=(i-a)/3;if(len>=min)out.push({st,f:f+1,a:st==='+'?a+1:n-i-2,b:st==='+'?i+3:n-a,len,p:tr(q.slice(a,i))});a=-1}}}});return out.sort((x,y)=>y.len-x.len)}
+const V={
+ overview(s){const c=cnt(s),n=s.length,gc=c.G+c.C,at=c.A+c.T;const tm=n<14?4*gc+2*at:64.9+41*(gc-16.4)/n;
+  const pc=b=>(c[b]/n*100).toFixed(1);
+  return panel(head('Overview','Basic composition and properties of your sequence.'),'<div class="stats"><div><small>Length</small><b>'+n+' bp</b></div><div><small>GC content</small><b>'+(gc/n*100).toFixed(2)+'%</b></div><div><small>AT content</small><b>'+(at/n*100).toFixed(2)+'%</b></div><div><small>Estimated Tm</small><b>'+tm.toFixed(1)+' \u00b0C</b></div></div><div class="sec">Base composition</div><div class="comp">'+['A','T','G','C'].map(b=>'<i class="bg'+b+'" style="width:'+(c[b]/n*100)+'%"></i>').join('')+'</div><div class="legend">'+['A','T','G','C'].map(b=>'<span class="'+b+'">'+b+' '+c[b]+' ('+pc(b)+'%)</span>').join('')+(c.N?'<span>N '+c.N+'</span>':'')+'</div><p class="note">Tm uses the Wallace rule below 14 bases and a GC-based formula above that. It is a rough estimate for a single oligo, not a lab-grade prediction.</p><div class="sec" style="margin-top:14px">Sequence</div><div class="seq">'+col(s)+'</div>')},
+ rc(s){const r=rcOf(s),c=[...s].map(b=>COMP[b]).join('');return panel(head('Reverse complement','The opposite strand, read 5\u2032 to 3\u2032. Also shows the plain complement and the reverse.'),
+  [['Reverse complement',r],['Complement',c],['Reverse',[...s].reverse().join('')]].map(([t,x],i)=>'<div class="bar" style="justify-content:space-between;margin:'+(i?'14':'0')+'px 0 6px"><span class="sec" style="margin:0">'+t+'</span>'+copyBtn('rc'+i,x)+'</div><div class="seq">'+col(x)+'</div>').join(''))},
+ tx(s){const r=s.replace(/T/g,'U');return panel(head('Transcription','Coding-strand DNA to mRNA. Thymine (T) is replaced by uracil (U).'),'<div class="bar" style="justify-content:space-between;margin:0 0 6px"><span class="sec" style="margin:0">mRNA</span>'+copyBtn('tx',r)+'</div><div class="seq">'+col(s).replace(/<span class="T">T<\/span>/g,'<span class="T">U</span>')+'</div>')},
+ tl(s){const rows=[['+',s],['-',rcOf(s)]].flatMap(([st,q])=>[0,1,2].map(f=>[st+(f+1),tr(q,f)]));
+  return panel(head('Six-frame translation','All three reading frames on both strands. A * marks a stop codon, X an unknown codon.'),'<div class="scroll"><table><tr><th>Frame</th><th>Protein</th><th></th></tr>'+rows.map(([f,p],i)=>'<tr><td>'+f+'</td><td class="m" style="word-break:break-all">'+p+'</td><td>'+copyBtn('tl'+i,p)+'</td></tr>').join('')+'</table></div><p class="note">Frames 1 to 3 start at the first, second and third base of the forward strand. Frames - are read on the reverse complement.</p>')},
+ orf(s){const min=+(CP._min||30);const o=orfs(s,min);return panel(head('ORF finder','Open reading frames that start with ATG and end with a stop codon, on both strands.'),
+  '<div class="bar" style="margin:0 0 12px"><label for="min" class="lab" style="margin:0">Minimum length (amino acids)</label><input id="min" type="number" min="1" value="'+min+'" style="width:80px;padding:5px;border:1px solid var(--line);border-radius:4px;background:var(--soft);color:var(--ink)"></div>'+
+  (o.length?'<div class="scroll"><table><tr><th>Strand</th><th>Frame</th><th>Start</th><th>End</th><th>Length (aa)</th><th>Protein</th></tr>'+o.slice(0,50).map(r=>'<tr><td>'+r.st+'</td><td>'+r.f+'</td><td>'+r.a+'</td><td>'+r.b+'</td><td>'+r.len+'</td><td><details><summary>View</summary><div class="seq">'+r.p+'</div></details></td></tr>').join('')+'</table></div>'+(o.length>50?'<p class="note">Showing the longest 50 of '+o.length+'.</p>':''):'<p class="empty">No ORFs of at least '+min+' amino acids found. Try a lower minimum.</p>'))},
+ re(s){const rows=ENZ.map(([n,site,off])=>{const pos=[];let i=s.indexOf(site);while(i>=0){pos.push(i+off);i=s.indexOf(site,i+1)}return [n,site,pos]});
+  return panel(head('Restriction sites','Common restriction enzymes and where they cut your sequence.'),'<div class="scroll"><table><tr><th>Enzyme</th><th>Site</th><th>Cuts</th><th>Cut positions</th></tr>'+rows.map(([n,site,pos])=>'<tr><td>'+n+'</td><td class="m">'+col(site)+'</td><td>'+pos.length+'</td><td class="m">'+(pos.length?pos.join(', '):'none')+'</td></tr>').join('')+'</table></div><p class="note">A cut position is the base after which the enzyme cuts the top strand, counted from 1. Only these 12 enzymes are checked.</p>')},
+};
+const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const svg=(w,h,b,l)=>'<svg viewBox="0 0 '+w+' '+h+'" class="dg" '+(w>420?'style="min-width:560px" ':'')+'role="img" aria-label="'+l+'">'+b+'</svg>';
+const tx_=(x,y,t,c,a)=>'<text x="'+x+'" y="'+y+'"'+(a?' text-anchor="'+a+'"':'')+(c?' class="'+c+'"':'')+'>'+t+'</text>';
+const dgPair=s=>{const n=Math.min(s.length,20),w=26;let o=tx_(2,22,'5\u2032','lb')+tx_(2,122,'3\u2032','lb');
+ for(let i=0;i<n;i++){const x=34+i*w+w/2,b=s[i],c=COMP[b];o+=tx_(x,22,b,b,'middle')+'<line x1="'+x+'" y1="32" x2="'+x+'" y2="98" class="ln" style="stroke-width:'+('GC'.includes(b)?3.5:1.5)+'"/>'+tx_(x,122,c,c,'middle')}
+ return [svg(34+n*w+30,138,o+tx_(34+n*w+8,22,'3\u2032','lb')+tx_(34+n*w+8,122,'5\u2032','lb'),'Base pairing'),'First '+n+' bases. Top: your strand. Bottom: the complementary strand. A thick line is a G-C pair (3 hydrogen bonds), a thin line is an A-T pair (2). Read the bottom strand from right to left to get the reverse complement.']};
+const dgTx=s=>{const n=Math.min(s.length,24),w=24;let o=tx_(2,28,'DNA','lb')+tx_(2,98,'mRNA','lb')+tx_(52+n*w/2,62,'\u2193 transcription (T becomes U)','lb','middle');
+ for(let i=0;i<n;i++){const x=52+i*w+w/2,b=s[i];o+=tx_(x,28,b,b,'middle');if(b==='T')o+='<rect x="'+(x-10)+'" y="78" width="20" height="26" rx="3" class="hl"/>';o+=tx_(x,98,b==='T'?'U':b,b,'middle')}
+ return [svg(60+n*w,116,o,'Transcription'),'First '+n+' bases. Every T in the DNA (boxed) becomes U in the mRNA. The other bases stay the same.']};
+const dgTl=s=>{const n=Math.min(Math.floor(s.length/3),10),w=58;let o='';
+ for(let i=0;i<n;i++){const c=s.slice(i*3,i*3+3),a=c.includes('N')?'X':AA[IDX[c[0]]*16+IDX[c[1]]*4+IDX[c[2]]],x=i*w+4,m=x+(w-8)/2;
+  o+='<rect x="'+x+'" y="6" width="'+(w-8)+'" height="30" rx="3" class="bx"/><text x="'+m+'" y="26" text-anchor="middle">'+[...c].map(b=>'<tspan class="'+b+'">'+b+'</tspan>').join('')+'</text>'+tx_(m,58,'\u2193','lb','middle')+'<rect x="'+(m-14)+'" y="66" width="28" height="28" rx="14" class="bx"/>'+tx_(m,86,a,a==='*'?'T':'','middle')}
+ return [svg(n*w+8,100,o,'Codons to amino acids'),'Frame 1, first '+n+' codons. Each group of 3 bases is looked up in the genetic code and becomes one amino acid. A * means stop.']};
+const dgOrf=s=>{const n=s.length,L=orfs(s,+(CP._min||30)).slice(0,60);let b='<line x1="20" y1="40" x2="680" y2="40" class="ln"/><line x1="20" y1="90" x2="680" y2="90" class="ln"/>'+tx_(20,20,'Forward strand (+)','lb')+tx_(20,112,'Reverse strand (-)','lb')+tx_(20,134,'1','lb')+tx_(680,134,n,'lb','end');
+ L.forEach(r=>{const x=20+(r.a-1)/n*660,w=Math.max(2,(r.b-r.a+1)/n*660),y=r.st==='+'?30:80;b+='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="20" rx="2" class="'+(r.st==='+'?'orfp':'orfm')+'"><title>'+r.st+' frame '+r.f+': '+r.a+'-'+r.b+' ('+r.len+' aa)</title></rect>'});
+ return [svg(700,142,b,'ORF map'),L.length?'Each bar is one ORF placed along your sequence. Hover a bar for details.':'No ORFs at this minimum length, so nothing to draw.']};
+const dgRe=s=>{const n=s.length;let b='<line x1="20" y1="60" x2="680" y2="60" class="ln" style="stroke-width:3"/>'+tx_(20,118,'1','lb')+tx_(680,118,n,'lb','end'),k=0;
+ ENZ.forEach(([nm,site,off])=>{let i=s.indexOf(site);while(i>=0){const x=20+(i+off)/n*660,up=k%2;b+='<line x1="'+x+'" y1="'+(up?30:60)+'" x2="'+x+'" y2="'+(up?60:90)+'" class="cut"/>'+tx_(x,up?24:104,nm,'lb','middle');k++;i=s.indexOf(site,i+1)}});
+ return [svg(700,126,b,'Restriction map'),k?'Each tick is a cut site, labelled with the enzyme name.':'None of these enzymes cut your sequence.']};
+const dgOv=s=>{const n=s.length,w=Math.max(10,Math.round(n/20)),st=Math.max(1,Math.round(w/4)),P2=[];
+ for(let i=0;i+w<=n;i+=st){let g=0;for(let j=i;j<i+w;j++)if(s[j]==='G'||s[j]==='C')g++;P2.push((40+(i+w/2)/n*640).toFixed(1)+','+(100-g/w*90).toFixed(1))}
+ if(P2.length<2)return null;
+ return [svg(700,124,'<line x1="40" y1="10" x2="680" y2="10" class="ln" style="opacity:.3"/><line x1="40" y1="55" x2="680" y2="55" class="ln" style="opacity:.3;stroke-dasharray:4 4"/><line x1="40" y1="100" x2="680" y2="100" class="ln"/>'+tx_(2,14,'100%','lb')+tx_(2,59,'50%','lb')+tx_(2,104,'0%','lb')+'<polyline points="'+P2.join(' ')+'" class="gcl"/>','GC content plot'),'GC% along the sequence, measured in a sliding window of '+w+' bases. Peaks are GC-rich regions, which are more stable.']};
+const dgBars=c=>{const k=Object.keys(c).sort((a,b)=>c[b]-c[a]),mx=c[k[0]];return svg(400,k.length*20+8,k.map((a,i)=>tx_(2,i*20+17,a)+'<rect x="24" y="'+(i*20+5)+'" width="'+(c[a]/mx*320)+'" height="14" rx="2" class="bar"/>'+tx_(30+c[a]/mx*320,i*20+17,c[a],'lb')).join(''),'Amino acid composition chart')};
+const CODE={
+ overview:"const gc = count('G') + count('C');\nconst gcPercent = gc / length * 100;\nconst tm = length < 14\n  ? 4 * gc + 2 * at\n  : 64.9 + 41 * (gc - 16.4) / length;",
+ rc:"const pair = { A:'T', T:'A', G:'C', C:'G' };\nconst complement = seq.map(b => pair[b]);\nconst reverseComplement = complement.reverse();",
+ tx:"const mRNA = seq.replace(/T/g, 'U');",
+ tl:"for (let i = 0; i + 2 < seq.length; i += 3) {\n  const codon = seq.slice(i, i + 3);\n  protein += codonTable[codon];  // e.g. ATG -> M\n}",
+ orf:"for each strand (forward, reverse complement):\n  for each frame (0, 1, 2):\n    walk the sequence codon by codon\n    ATG found      -> remember the start\n    stop codon     -> ORF = start .. stop\n    keep the ORF if its length >= minimum",
+ re:"let i = seq.indexOf(site);\nwhile (i >= 0) {\n  cuts.push(i + cutOffset);\n  i = seq.indexOf(site, i + 1);\n}",
+ prot:"let mass = 18.015;              // one water\nfor (const aa of protein) {\n  mass += residueMass[aa];\n}"};
+const howInner=(id,L)=>'<div class="how"><div class="sec" style="margin:16px 0 0">How it works</div><ol>'+L.map(x=>'<li>'+x+'</li>').join('')+'</ol><details><summary>Show the code</summary><pre class="code">'+esc(CODE[id])+'</pre></details></div>';
+function steps(id,s){const c=cnt(s),n=s.length,gc=c.G+c.C,at=c.A+c.T,e=s.slice(0,12),ec=[...e].map(b=>COMP[b]).join(''),dots=n>12?'\u2026':'';
+ const cd=[...Array(3)].map((_,i)=>s.slice(i*3,i*3+3)).filter(x=>x.length===3);
+ return {
+ overview:['Count how many times each base appears: A='+c.A+', T='+c.T+', G='+c.G+', C='+c.C+'.','GC content = (G + C) / length = ('+c.G+' + '+c.C+') / '+n+' = '+(gc/n*100).toFixed(2)+'%.','AT content = (A + T) / length = '+(at/n*100).toFixed(2)+'%.','Tm is estimated from the length and the GC count, using the formula that fits this length.','The graph slides a short window along the sequence and plots the GC% of each window.'],
+ rc:['Start with your sequence: <code>'+e+dots+'</code>','Swap every base for its partner (A\u2194T, G\u2194C): <code>'+ec+dots+'</code>','Reverse the order so it reads 5\u2032 to 3\u2032. The first base of the answer pairs with your last base ('+s[n-1]+' \u2192 '+COMP[s[n-1]]+').'],
+ tx:['Go through the DNA one base at a time.','Replace each T with U. In your sequence that changes '+c.T+' base'+(c.T===1?'':'s')+'.','Keep A, G and C as they are. The result is the mRNA.'],
+ tl:['Split the sequence into groups of 3 bases (codons)'+(cd.length?': <code>'+cd.join(' ')+'</code>\u2026':'.'),'Look up each codon in the genetic code'+(cd.length?': '+cd.map(x=>x+' \u2192 '+AA[IDX[x[0]]*16+IDX[x[1]]*4+IDX[x[2]]]).join(', ')+'\u2026':'.'),'Join the amino acids to build the protein. Do this for 3 frames on each strand, since the starting base is not known.'],
+ orf:['Read the sequence in each of 3 frames, on the forward strand and on the reverse complement.','In each frame, wait for a start codon (ATG), then keep reading codon by codon.','When a stop codon (TAA, TAG or TGA) appears, the stretch from ATG to the stop is one ORF.','Keep only ORFs at least '+(CP._min||30)+' amino acids long, and list the longest first.'],
+ re:['Each enzyme recognises one short DNA pattern, for example EcoRI recognises GAATTC.','Search your sequence for that exact pattern, from the start to the end.','At every match, the cut position is the match start plus the enzyme\u2019s cut offset (EcoRI cuts after the first base, G^AATTC).','Count the matches and list their positions.']
+ }[id]}
+function extra(id,s){let d=null;
+ if(id==='overview')d=dgOv(s);if(id==='orf')d=dgOrf(s);if(id==='re')d=dgRe(s);
+ return watch(id,s)+(d?panel('<div class="sec">Diagram</div>','<div class="scroll">'+d[0]+'</div><p class="note">'+d[1]+'</p>'):'')+(id==='overview'?dinuc(s):'')+'<div class="panel">'+howInner(id,steps(id,s))+'</div>'+aiPanel()}
+const protSteps=(p,m)=>['Clean the input: remove spaces, numbers and stop symbols. That leaves '+p.length+' amino acids.','Look up the average mass of each residue: '+[...p].slice(0,3).map(a=>a+' = '+MASS[a]).join(', ')+'\u2026','Add all the residue masses, then add one water (18.015 Da) for the two ends of the chain.','Total = '+m.toFixed(1)+' Da, which is '+(m/1000).toFixed(2)+' kDa.'];
+const PL={};
+const tl_=(x,y,b,w,cls,h)=>{h=h||28;return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="4" class="tile t'+b+' '+(cls||'')+'"/>'+tx_(x+w/2,y+h/2+6,b,'tt','middle')};
+const aaC=(x,y,a,r,cls)=>'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" class="aa '+(cls||'')+'"/>'+tx_(x,y+6,a,a==='*'?'T ab':'ab','middle');
+const aaOf=c=>c.includes('N')?'X':AA[IDX[c[0]]*16+IDX[c[1]]*4+IDX[c[2]]];
+const pickEnz=s=>ENZ.find(e=>e[0]===CP._enz)||ENZ.find(e=>s.includes(e[1]))||ENZ[0];
+const tsp=c=>[...c].map(b=>'<tspan class="'+b+'">'+b+'</tspan>').join('');
+const capTx=(s,k,m)=>k===0?'This is your DNA ('+m+' bases shown). Press Play to copy it into mRNA.':k===m?'Done. Every T became U, and A, G and C were copied unchanged.':'Base '+k+': '+(s[k-1]==='T'?'T becomes U in RNA.':s[k-1]+' is copied unchanged.');
+const frRc=s=>{const m=Math.min(s.length,8),ts=40,x0=(360-(m*ts-6))/2,F=[];
+ for(let k=0;k<=m+1;k++){let o=tx_(x0,14,'Your strand (5\u2032 to 3\u2032)','lb'),cap;
+  for(let i=0;i<m;i++){const b=s[i],x=x0+i*ts,cx=x+17;o+=tl_(x,22,b,34,i===k-1?'cur':'',36);
+   if(i<k){(b==='G'||b==='C'?[-5,0,5]:[-3,3]).forEach(d=>o+='<line x1="'+(cx+d)+'" y1="62" x2="'+(cx+d)+'" y2="98" class="ln"/>');o+=tl_(x,102,COMP[b],34,i===k-1?'cur':'',36)}}
+  if(k>0)o+=tx_(x0,156,'New strand (3\u2032 to 5\u2032)','lb');
+  if(k===0)cap='This is your DNA strand ('+m+' bases shown). Press Play to build the opposite strand.';
+  else if(k<=m){const b=s[k-1];cap='Base '+k+': '+b+' always pairs with '+COMP[b]+'. '+(b==='G'||b==='C'?'G-C has 3 bonds (3 lines).':'A-T has 2 bonds (2 lines).')}
+  else{const r=[...s.slice(0,m)].map(b=>COMP[b]).reverse();o+=tx_(180,184,'\u2193 now read the new strand backwards (right to left)','lb','middle');r.forEach((b,i)=>o+=tl_(x0+i*ts,194,b,34,'',36));o+=tx_(x0,246,'Reverse complement (5\u2032 to 3\u2032)','lb');cap='Reading the new strand from right to left gives the reverse complement: '+r.join('')+'.'}
+  F.push([svg(360,256,o,'Reverse complement animation'),cap])}
+ return F};
+const frTx=s=>{const m=Math.min(s.length,8),ts=40,x0=(360-(m*ts-6))/2,F=[];
+ for(let k=0;k<=m;k++){let o=tx_(x0,14,'DNA','lb')+tx_(180,88,'\u2193 copy each base (T becomes U)','lb','middle');
+  for(let i=0;i<m;i++){const b=s[i],x=x0+i*ts;o+=tl_(x,22,b,34,i===k-1?'cur':'',36);if(i<k)o+=tl_(x,100,b==='T'?'U':b,34,i===k-1?'cur':'',36)}
+  if(k)o+=tx_(x0,152,'mRNA','lb');F.push([svg(360,162,o,'Transcription animation'),capTx(s,k,m)])}
+ return F};
+const frTl=s=>{const nc=Math.min(Math.floor(s.length/3),4),ts=28,x0=12,F=[],pr=[];
+ for(let k=0;k<nc;k++){const c=s.slice(k*3,k*3+3),a=aaOf(c);pr.push(a);let o='';
+  for(let i=0;i<nc*3;i++)o+=tl_(x0+i*ts,18,s[i],26,'',30);
+  o+='<rect x="'+(x0+k*3*ts-3)+'" y="12" width="'+(3*ts-1)+'" height="42" rx="7" class="win"/>'+tx_(x0,84,'Codon (3 bases)','lb')+'<text x="'+x0+'" y="116" class="big">'+tsp(c)+'</text>'+tx_(112,112,'\u2192','lb')+aaC(176,106,a,24)+tx_(214,110,a==='*'?'stop codon':'amino acid','lb')+tx_(x0,150,'Protein so far','lb');
+  pr.forEach((p,i)=>o+=aaC(x0+18+i*40,176,p,16));
+  F.push([svg(360,204,o,'Translation animation'),'Codon '+(k+1)+': '+c+' is looked up in the genetic code and gives '+(a==='*'?'a stop signal (*).':a+'.')+' It is added to the protein.'])}
+ return F};
+const frOrf=s=>{const n=s.length,c0=orfs(s,1).filter(r=>r.st==='+'),fw=c0.filter(r=>r.len<=6).sort((a,b)=>b.len-a.len)[0]||c0[0];let b0=0;if(fw){const a=fw.a-1;b0=a<3?a%3:a-3}
+ const nc=Math.min(Math.floor((n-b0)/3),8),bw=42,x0=12,F=[],cd=[],aa=[];
+ for(let c=0;c<nc;c++){cd.push(s.slice(b0+c*3,b0+c*3+3));aa.push(aaOf(cd[c]))}
+ let inside=false,st=-1,en=-1,seq='';
+ for(let k=0;k<nc;k++){const c=cd[k];let cap;
+  if(!inside&&c==='ATG'){inside=true;st=k;en=k;seq='M';cap='Codon '+(k+1)+' is ATG, a start codon. The ORF begins here.'}
+  else if(inside&&aa[k]==='*'){en=k;inside=false;cap='Codon '+(k+1)+' is the stop codon '+c+'. The ORF ends. It has '+seq.length+' amino acids: '+seq+'.'}
+  else if(inside){en=k;seq+=aa[k];cap='Codon '+(k+1)+': '+c+' gives '+aa[k]+'. Keep reading.'}
+  else cap='Codon '+(k+1)+': '+c+' is not ATG, so keep searching.';
+  let o=tx_(x0,16,inside?'Inside an ORF: reading codons':(st>=0?'ORF finished':'Searching for a start codon (ATG)'),'lb');
+  for(let i=0;i<nc;i++){const x=x0+i*bw,reg=st>=0&&i>=st&&i<=en;o+='<rect x="'+x+'" y="28" width="'+(bw-4)+'" height="40" rx="5" class="cb'+(reg?' reg':'')+(i===k?' cur':'')+(i>k?' dim':'')+'"/><text x="'+(x+(bw-4)/2)+'" y="53" text-anchor="middle" class="cd">'+tsp(cd[i])+'</text>';if(i<=k)o+=tx_(x+(bw-4)/2,94,aa[i],aa[i]==='*'?'T ab':'ab','middle')}
+  o+=tx_(x0,126,'Protein so far: '+(seq||'none yet'),'lb');F.push([svg(360,138,o,'ORF scanning animation'),cap])}
+ return F};
+const frRe=s=>{const [nm,site,off]=pickEnz(s),L=site.length,fm=s.indexOf(site),st0=Math.max(0,(fm<0?0:fm)-3),vis=Math.min(s.length-st0,12),ts=28,x0=12,F=[],cuts=[];
+ for(let p=0;p+L<=vis;p++){const w=s.slice(st0+p,st0+p+L),ok=w===site;if(ok)cuts.push(p+off);let o=tx_(x0,14,'Your DNA','lb');
+  for(let i=0;i<vis;i++)o+=tl_(x0+i*ts,24,s[st0+i],26,'',30);
+  o+='<rect x="'+(x0+p*ts-3)+'" y="18" width="'+(L*ts-1)+'" height="42" rx="7" class="win'+(ok?' ok':'')+'"/>'+tx_(x0,86,nm+' looks for '+site,'lb');
+  [...site].forEach((c,i)=>{const mt=w[i]===c,x=x0+(p+i)*ts+13;o+=tx_(x,112,c,mt?'ab '+c:'ab','middle')+tx_(x,136,mt?'\u2713':'\u2717',mt?'okc ab':'T ab','middle')});
+  cuts.forEach(c=>o+='<line x1="'+(x0+c*ts-2)+'" y1="12" x2="'+(x0+c*ts-2)+'" y2="64" class="cut"/>');
+  F.push([svg(360,150,o,'Restriction animation'),ok?'Match at position '+(st0+p+1)+'. '+nm+' cuts here, after base '+(st0+p+off)+'.':'No match: '+w+' is not '+site+'.'])}
+ return F};
+const frOv=s=>{const m=Math.min(s.length,8),ts=40,x0=(360-(m*ts-6))/2,F=[],c={A:0,T:0,G:0,C:0,N:0};
+ for(let k=0;k<=m;k++){if(k)c[s[k-1]]++;let o='';for(let i=0;i<m;i++)o+=tl_(x0+i*ts,18,s[i],34,i===k-1?'cur':(i<k?'':'dim'),36);
+  ['A','T','G','C'].forEach((b,j)=>{const x=24+j*84;o+=tl_(x,84,b,32,'',32)+'<text x="'+(x+16)+'" y="142" text-anchor="middle" class="big">'+c[b]+'</text>'});
+  const g=c.G+c.C;o+=tx_(24,172,'GC so far: '+g+' of '+k+' = '+(k?(g/k*100).toFixed(1):'0.0')+'%','lb');
+  F.push([svg(360,186,o,'Counting animation'),k===0?'Press Play to count the bases one by one ('+m+' shown).':'Base '+k+' is '+s[k-1]+'. Add 1 to the '+s[k-1]+' count.'])}
+ return F};
+const frProt=p=>{const m=Math.min(p.length,8),ts=40,x0=(360-(m*ts-6))/2+17,F=[];let tot=18.01524;
+ F.push([svg(360,130,tx_(180,64,'Start with one water molecule: 18.015 Da','lb','middle'),'Mass animation'),'The chain starts with one water molecule (18.015 Da). Each amino acid then adds its own mass.']);
+ for(let k=1;k<=m;k++){const a=p[k-1];tot+=MASS[a];let o='';for(let i=0;i<m;i++)o+=aaC(x0+i*ts,32,p[i],17,(i===k-1?'cur':'')+(i<k?'':' dim'));
+  o+=tx_(180,84,a+' adds '+MASS[a].toFixed(2)+' Da','lb','middle')+'<text x="180" y="118" text-anchor="middle" class="big">'+tot.toFixed(2)+' Da</text>';
+  F.push([svg(360,130,o,'Mass animation'),'Residue '+k+' is '+a+', which adds '+MASS[a].toFixed(2)+' Da. Running total: '+tot.toFixed(2)+' Da.'])}
+ return F};
+function player(id,F,note){if(PL[id])clearInterval(PL[id].t);PL[id]={F,i:0,t:null};
+ return '<div class="pl" data-pl="'+id+'"><div class="scroll"><div id="pst-'+id+'">'+F[0][0]+'</div></div><p class="pcap" id="pcap-'+id+'" aria-live="polite">'+F[0][1]+'</p><div class="pctl"><button type="button" data-pa="reset" aria-label="Restart">\u23ee</button><button type="button" data-pa="prev" aria-label="Previous step">\u25c0</button><button type="button" class="pri" data-pa="play" id="pplay-'+id+'">\u25b6 Play</button><button type="button" data-pa="next" aria-label="Next step">\u25b6\u2223</button><input type="range" min="0" max="'+(F.length-1)+'" value="0" data-pr="'+id+'" aria-label="Step"><select data-ps aria-label="Speed"><option value="2000">Slow</option><option value="1200" selected>Normal</option><option value="400">Fast</option></select><span class="msg" id="pcnt-'+id+'">Step 1 of '+F.length+'</span></div>'+(note?'<p class="note">'+note+'</p>':'')+'</div>'}
+function pshow(id,i){const p=PL[id];if(!p||!$('pst-'+id))return;p.i=Math.max(0,Math.min(p.F.length-1,i));$('pst-'+id).innerHTML=p.F[p.i][0];$('pcap-'+id).textContent=p.F[p.i][1];$('pcnt-'+id).textContent='Step '+(p.i+1)+' of '+p.F.length;const r=document.querySelector('[data-pr="'+id+'"]');if(r)r.value=p.i}
+function stopP(id){const p=PL[id];if(!p)return;clearInterval(p.t);p.t=null;const b=$('pplay-'+id);if(b)b.textContent='\u25b6 Play'}
+function watch(id,s){let F=[],pre='';
+ if(id==='overview')F=frOv(s);if(id==='rc')F=frRc(s);if(id==='tx')F=frTx(s);if(id==='tl')F=frTl(s);if(id==='orf')F=frOrf(s);
+ if(id==='re'){F=frRe(s);const e=pickEnz(s)[0];pre='<div class="bar" style="margin:0 0 8px"><label class="lab" for="enz" style="margin:0">Enzyme</label><select id="enz" data-enz>'+ENZ.map(x=>'<option'+(x[0]===e?' selected':'')+'>'+x[0]+'</option>').join('')+'</select></div>'}
+ if(!F.length)return '';
+ return panel('<div class="sec">Watch it work</div>',pre+player(id,F,s.length>30?'The animation uses the first part of your sequence so each step stays readable. The result above uses all of it.':'')+'<div class="chips"><span class="chip"><i style="background:var(--tA)"></i>A adenine</span><span class="chip"><i style="background:var(--tT)"></i>T thymine (U in RNA)</span><span class="chip"><i style="background:var(--tG)"></i>G guanine</span><span class="chip"><i style="background:var(--tC)"></i>C cytosine</span></div>')}
+$('view').addEventListener('click',e=>{const b=e.target.closest('[data-pa]');if(!b)return;const box=b.closest('.pl'),id=box.dataset.pl,p=PL[id],a=b.dataset.pa;if(!p)return;
+ if(a==='reset'){stopP(id);pshow(id,0)}
+ if(a==='prev'){stopP(id);pshow(id,p.i-1)}
+ if(a==='next'){stopP(id);pshow(id,p.i+1)}
+ if(a==='play'){if(p.t){stopP(id);return}if(p.i>=p.F.length-1)pshow(id,0);b.textContent='\u275a\u275a Pause';p.t=setInterval(()=>{if(p.i>=p.F.length-1){stopP(id);return}pshow(id,p.i+1)},+box.querySelector('[data-ps]').value)}});
+$('view').addEventListener('input',e=>{const r=e.target.closest('[data-pr]');if(r){stopP(r.dataset.pr);pshow(r.dataset.pr,+r.value)}});
+$('view').addEventListener('change',e=>{if(e.target.matches('[data-enz]')){CP._enz=e.target.value;render()}else if(e.target.matches('[data-ps]')){const id=e.target.closest('.pl').dataset.pl,p=PL[id];if(p&&p.t){stopP(id);$('pplay-'+id).click()}}});
+let S2='',AM={mode:'global',M:2,X:-1,G:-2};
+const KD={A:1.8,R:-4.5,N:-3.5,D:-3.5,C:2.5,Q:-3.5,E:-3.5,G:-0.4,H:-3.2,I:4.5,L:3.8,K:-3.9,M:1.9,F:2.8,P:-1.6,S:-0.8,T:-0.7,W:-0.9,Y:-1.3,V:4.2};
+const PK={D:3.9,E:4.1,C:8.3,Y:10.1,H:6.0,K:10.5,R:12.5};
+CODE.align="H[i][j] = max(\n  H[i-1][j-1] + (a[i] === b[j] ? match : mismatch),  // diagonal\n  H[i-1][j]   + gap,                                 // up\n  H[i][j-1]   + gap                                  // left\n);\n// local mode: also max with 0\n// then trace back from the end (or the best cell) to the start";
+const cleanDna=raw=>raw.split('\n').filter(l=>!l.trim().startsWith('>')).join('').toUpperCase().replace(/[\s\d]/g,'').replace(/U/g,'T');
+function nw(a,b,loc,M,X,G){const n=a.length,m=b.length,H=[],T=[];
+ for(let i=0;i<=n;i++){H.push(new Array(m+1).fill(0));T.push(new Array(m+1).fill(0))}
+ if(!loc){for(let i=1;i<=n;i++){H[i][0]=i*G;T[i][0]=2}for(let j=1;j<=m;j++){H[0][j]=j*G;T[0][j]=3}}
+ let bs=0,bi=0,bj=0;
+ for(let i=1;i<=n;i++)for(let j=1;j<=m;j++){const d=H[i-1][j-1]+(a[i-1]===b[j-1]?M:X),u=H[i-1][j]+G,l=H[i][j-1]+G;let v=Math.max(d,u,l),t=v===d?1:v===u?2:3;if(loc&&v<=0){v=0;t=0}H[i][j]=v;T[i][j]=t;if(v>bs){bs=v;bi=i;bj=j}}
+ let i=loc?bi:n,j=loc?bj:m,A='',B='';const path=[[i,j]];
+ while(loc?T[i][j]!==0:(i>0||j>0)){const t=T[i][j];if(t===1){A=a[i-1]+A;B=b[j-1]+B;i--;j--}else if(t===2){A=a[i-1]+A;B='-'+B;i--}else{A='-'+A;B=b[j-1]+B;j--}path.push([i,j])}
+ return {H,A,B,path,score:loc?bs:H[n][m],si:i,sj:j}}
+function heat(a,b,r){const on=new Set(r.path.map(p=>p.join()));let h='<table class="mx"><tr><th></th><th></th>'+[...b].map(c=>'<th class="'+c+'">'+c+'</th>').join('')+'</tr>';
+ for(let i=0;i<=a.length;i++){h+='<tr><th class="'+(i?a[i-1]:'')+'">'+(i?a[i-1]:'')+'</th>';for(let j=0;j<=b.length;j++)h+='<td'+(on.has(i+','+j)?' class="pth"':'')+'>'+r.H[i][j]+'</td>';h+='</tr>'}
+ return h+'</table>'}
+function aResult(a,b,loc,M,X,G){const r=nw(a,b,loc,M,X,G),A=r.A,B=r.B,L=A.length;
+ if(!L)return '<p class="empty">No matching region found with these scores.</p>';
+ let mt=0,mm=0,gp=0,mid='',p1=r.si,p2=r.sj;const df=[];
+ for(let k=0;k<L;k++){const x=A[k],y=B[k];if(x!=='-')p1++;if(y!=='-')p2++;
+  if(x==='-'){gp++;mid+=' ';df.push(['Insertion in sequence 2','after '+p1,'-',y])}else if(y==='-'){gp++;mid+=' ';df.push(['Deletion in sequence 2',p1,x,'-'])}else if(x===y){mt++;mid+='|'}else{mm++;mid+='.';df.push(['Substitution',p1,x,y])}}
+ let blk='',s1=r.si,s2=r.sj;
+ for(let k=0;k<L;k+=50){const x=A.slice(k,k+50),y=B.slice(k,k+50),e1=s1+[...x].filter(c=>c!=='-').length,e2=s2+[...y].filter(c=>c!=='-').length;
+  blk+='Seq 1  '+String(s1+1).padStart(4)+'  '+col(x)+'  '+e1+'\n       '+' '.repeat(4)+'  '+mid.slice(k,k+50)+'\n'+'Seq 2  '+String(s2+1).padStart(4)+'  '+col(y)+'  '+e2+'\n\n';s1=e1;s2=e2}
+ return '<div class="stats"><div><small>Score</small><b>'+r.score+'</b></div><div><small>Identity</small><b>'+(mt/L*100).toFixed(1)+'%</b></div><div><small>Matches</small><b>'+mt+'</b></div><div><small>Mismatches</small><b>'+mm+'</b></div><div><small>Gaps</small><b>'+gp+'</b></div><div><small>Length</small><b>'+L+'</b></div></div>'+
+ '<div class="sec">Alignment</div><div class="seq" style="white-space:pre;overflow-x:auto;max-height:none">'+blk+'</div><p class="note">| match, . mismatch, - gap.</p>'+
+ '<div class="sec" style="margin-top:14px">Differences (possible mutations)</div>'+(df.length?'<div class="scroll"><table><tr><th>Type</th><th>Position in seq 1</th><th>Seq 1</th><th>Seq 2</th></tr>'+df.slice(0,40).map(d=>'<tr><td>'+d[0]+'</td><td>'+d[1]+'</td><td class="m">'+d[2]+'</td><td class="m">'+d[3]+'</td></tr>').join('')+'</table></div>'+(df.length>40?'<p class="note">Showing the first 40 of '+df.length+'.</p>':''):'<p class="empty">The aligned region is identical.</p>')+
+ (a.length<=14&&b.length<=14?'<div class="sec" style="margin-top:16px">Score table (the highlighted path is the alignment)</div><div class="scroll">'+heat(a,b,r)+'</div>':'<p class="note">The score table is shown for sequences up to 14 bases.</p>')+
+ howInner('align',['Make a table with your sequence down the side and the second sequence across the top.','Fill each cell with the best of three moves: diagonal (match '+M+' or mismatch '+X+'), up or left (gap '+G+').',loc?'Local mode: scores never go below 0, so the best matching part wins.':'Global mode: the alignment must cover both sequences from start to end.','Start at the '+(loc?'highest score':'bottom-right cell')+' and follow the best moves back to the start. That path is the alignment.','Compare the two aligned rows column by column to list substitutions, insertions and deletions.'])}
+function alignRender(){
+ $('view').innerHTML=panel(head('Pairwise alignment','Compare your sequence (top box) with a second sequence. It finds matches, mismatches (possible mutations) and gaps.'),
+ '<label class="lab" for="s2">Second DNA sequence</label><textarea id="s2" spellcheck="false" placeholder="Paste the second sequence">'+S2+'</textarea><div class="bar" style="margin-top:12px"><label for="amode" class="lab" style="margin:0">Method</label><select id="amode" class="inp"><option value="global">Global</option><option value="local">Local</option></select><label for="am" class="lab" style="margin:0 0 0 8px">Match</label><input id="am" class="inp" type="number" style="width:64px"><label for="ax" class="lab" style="margin:0">Mismatch</label><input id="ax" class="inp" type="number" style="width:64px"><label for="ag" class="lab" style="margin:0">Gap</label><input id="ag" class="inp" type="number" style="width:64px"></div><div id="aout" style="margin-top:16px"></div>');
+ $('amode').value=AM.mode;$('am').value=AM.M;$('ax').value=AM.X;$('ag').value=AM.G;
+ const run=()=>{S2=$('s2').value;AM.mode=$('amode').value;const nv=(i,d)=>{const v=parseFloat($(i).value);return isNaN(v)?d:v};AM.M=nv('am',2);AM.X=nv('ax',-1);AM.G=nv('ag',-2);
+  const b=cleanDna(S2),a=S.s,o=$('aout'),bad=[...new Set(b.replace(/[ACGTN]/g,'').split(''))];
+  if(!b){o.innerHTML='<p class="empty">Enter a second sequence, or load the example.</p>';return}
+  if(bad.length){o.innerHTML='<p class="msg err">Invalid characters in sequence 2: '+bad.join(', ')+'.</p>';return}
+  if(a.length>300||b.length>300){o.innerHTML='<p class="msg err">Please use at most 300 bases per sequence for alignment.</p>';return}
+  o.innerHTML=aResult(a,b,AM.mode==='local',AM.M,AM.X,AM.G)};
+ ['s2','amode','am','ax','ag'].forEach(i=>$(i).oninput=run);
+ $('amode').onchange=run;
+ const ex=document.createElement('button');ex.type='button';ex.textContent='Load example';ex.onclick=()=>{$('s2').value=S.s.slice(0,40).replace(/G/,'A').replace(/C/,'')+S.s.slice(41,44);run()};$('amode').parentNode.prepend(ex);
+ run()}
+function charge(p,ph){const c={};for(const a of p)c[a]=(c[a]||0)+1;let q=1/(1+Math.pow(10,ph-9))-1/(1+Math.pow(10,2-ph));['K','R','H'].forEach(a=>q+=(c[a]||0)/(1+Math.pow(10,ph-PK[a])));['D','E','C','Y'].forEach(a=>q-=(c[a]||0)/(1+Math.pow(10,PK[a]-ph)));return q}
+function pIof(p){let lo=0,hi=14;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(charge(p,m)>0)lo=m;else hi=m}return(lo+hi)/2}
+function protAdv(p){const w=9,gr=[...p].reduce((t,a)=>t+KD[a],0)/p.length,pts=[];
+ for(let i=0;i+w<=p.length;i++){let t=0;for(let j=i;j<i+w;j++)t+=KD[p[j]];pts.push((40+(i+w/2)/p.length*640).toFixed(1)+','+(60-t/w*12).toFixed(1))}
+ const plot=pts.length>1?'<div class="sec" style="margin:14px 0 6px">Hydropathy plot (Kyte-Doolittle, window 9)</div><div class="scroll">'+svg(700,124,'<line x1="40" y1="60" x2="680" y2="60" class="ln"/><line x1="40" y1="'+(60-1.6*12)+'" x2="680" y2="'+(60-1.6*12)+'" class="ln" style="stroke-dasharray:4 4"/>'+tx_(2,64,'0','lb')+tx_(2,44,'1.6','lb')+tx_(2,14,'+4','lb')+tx_(2,112,'-4','lb')+'<polyline points="'+pts.join(' ')+'" class="gcl"/>','Hydropathy plot')+'</div><p class="note">Peaks above the dashed line suggest hydrophobic stretches, which can be transmembrane regions. Valleys are hydrophilic and usually sit on the protein surface.</p>':'<p class="note">Enter at least 10 amino acids to see the hydropathy plot.</p>';
+ return '<div class="sec" style="margin:16px 0 6px">Advanced properties</div><div class="stats"><div><small>GRAVY (hydropathy)</small><b>'+gr.toFixed(2)+'</b></div><div><small>Estimated pI</small><b>'+pIof(p).toFixed(2)+'</b></div><div><small>Charge at pH 7</small><b>'+charge(p,7).toFixed(1)+'</b></div></div><p class="note">A positive GRAVY means the protein is overall hydrophobic, a negative one means hydrophilic. pI and charge are estimates from standard pKa values.</p>'+plot}
+function dinuc(s){const B=['A','T','G','C'],c={};B.forEach(a=>B.forEach(b=>c[a+b]=0));for(let i=0;i<s.length-1;i++){const k=s[i]+s[i+1];if(k in c)c[k]++}const mx=Math.max(1,...Object.values(c)),tot=Math.max(1,s.length-1);
+ return panel('<div class="sec">Dinucleotide frequency</div>','<div class="scroll"><table class="mx"><tr><th>1st / 2nd</th>'+B.map(b=>'<th class="'+b+'">'+b+'</th>').join('')+'</tr>'+B.map(a=>'<tr><th class="'+a+'">'+a+'</th>'+B.map(b=>'<td style="background:rgba(52,84,209,'+(c[a+b]/mx*.45).toFixed(2)+')">'+c[a+b]+' <small>('+(c[a+b]/tot*100).toFixed(1)+'%)</small></td>').join('')+'</tr>').join('')+'</table></div><p class="note">How often each pair of neighbouring bases occurs. Darker means more frequent.</p>')}
+let SM,CHAT=[],ACTL=null,AIL='English';
+const getSample=async()=>{if(SM===undefined){try{SM=window.claude?await window.claude.use('sample'):null}catch(e){SM=null}}return SM};
+const langTxt=l=>l==='Roman Urdu'?'Roman Urdu (Urdu written in English letters), keeping technical terms in English':'simple English';
+const aiErr=c=>({not_granted:'AI was not allowed. Please allow it when asked, then try again.',rate_limited:'Too many requests. Wait a moment and try again.',cancelled:'(stopped)'}[c]||'Something went wrong. Please try again.');
+function aiCtx(id,s){const n=s.length,c=cnt(s),gc=c.G+c.C,nm=(GROUPS.flatMap(g=>g[1]).find(x=>x[0]===id)||[0,id])[1];
+ let r='Tool: '+nm+'\nSequence length: '+n+'\nBase counts: A='+c.A+' T='+c.T+' G='+c.G+' C='+c.C+'\nGC content: '+(gc/n*100).toFixed(2)+'%\nSequence'+(n>400?' (first 400 bases)':'')+': '+s.slice(0,400);
+ if(id==='tl')r+='\nFrame 1 protein: '+tr(s,0).slice(0,150);
+ if(id==='orf')r+='\nORFs (min '+(CP._min||30)+' aa): '+(orfs(s,+(CP._min||30)).slice(0,8).map(o=>o.st+' frame '+o.f+', '+o.a+'-'+o.b+', '+o.len+' aa').join('; ')||'none');
+ if(id==='re')r+='\nCut sites: '+(ENZ.map(([m,site,off])=>{const p=[];let i=s.indexOf(site);while(i>=0){p.push(i+off);i=s.indexOf(site,i+1)}return p.length?m+' at '+p.join(','):null}).filter(Boolean).join('; ')||'none');
+ return r}
+const aiPanel=()=>'';const aiPanelClaudeOnly=()=>panel('<div class="sec">Explain with AI</div>','<p class="note" style="margin:0 0 10px">Get a short explanation of this result written for students.</p><div class="bar" style="margin:0"><select id="ailang" class="inp" aria-label="Language"><option'+(AIL==='English'?' selected':'')+'>English</option><option'+(AIL!=='English'?' selected':'')+'>Roman Urdu</option></select><button type="button" class="pri" id="aibtn">Explain this result</button><button type="button" id="aistop" hidden>Stop</button></div><div id="aiout" class="aiout" aria-live="polite"></div><p class="note">AI can make mistakes. The numbers above are calculated by code. Check important facts with your teacher or textbook.</p>');
+async function askAI(){const out=$('aiout'),btn=$('aibtn'),stop=$('aistop');AIL=$('ailang').value;const sm=await getSample();
+ if(!sm){out.textContent='AI is not available here. Open this page inside Claude to use it.';return}
+ if(!S||!S.s||S.bad.length)return;
+ const pr='You are a friendly bioinformatics tutor for university students. Explain the result below in '+langTxt(AIL)+'. Use short paragraphs: what the tool did, what this result means biologically, and one thing the student should check or learn next. Keep it under 200 words. The numbers are computed by code and are correct; do not invent other numbers.\n\n'+aiCtx(cur,S.s);
+ ACTL=new AbortController();btn.disabled=true;stop.hidden=false;out.textContent='Thinking...';
+ try{const r=await sm(pr,{signal:ACTL.signal,modelTier:'quick',onText:({text})=>{if(out.isConnected)out.textContent=text}});if(out.isConnected)out.textContent=r.text}
+ catch(e){if(out.isConnected)out.textContent=(e.text?e.text+'\n\n':'')+aiErr(e.code)}
+ finally{if(btn.isConnected){btn.disabled=false;stop.hidden=true}}}
+const chatHtml=()=>CHAT.length?CHAT.map(m=>'<div class="msg-'+m.role+'">'+esc(m.content)+'</div>').join(''):'<p class="empty">Ask anything about DNA, proteins or the tools in this app. For example:</p><div class="bar">'+['What is GC content?','Why do ORFs start with ATG?','What does a restriction enzyme do?'].map(q=>'<button type="button" data-q="'+q+'">'+q+'</button>').join('')+'</div>';
+function tutorRender(){$('view').innerHTML=panel(head('AI Tutor','Ask a bioinformatics question and get a short, simple answer. Tick "Include my sequence" to ask about the sequence you loaded.'),'<div id="chat" class="chat" aria-live="polite">'+chatHtml()+'</div><div class="bar" style="margin-top:12px"><input id="q" class="inp" style="flex:1;min-width:180px" placeholder="Type your question" aria-label="Question"><button type="button" class="pri" id="qsend">Ask</button><button type="button" id="qstop" hidden>Stop</button></div><div class="bar"><label class="msg"><input type="checkbox" id="qseq"> Include my sequence</label><select id="qlang" class="inp" aria-label="Language"><option>English</option><option>Roman Urdu</option></select><button type="button" id="qclr">New chat</button></div><p class="note">AI can make mistakes. Check important facts with your teacher or textbook.</p>')}
+async function sendQ(){const qi=$('q'),q=qi.value.trim();if(!q)return;const sm=await getSample(),chat=$('chat');
+ if(!sm){chat.innerHTML=chatHtml()+'<div class="msg-assistant">AI is not available here. Open this page inside Claude to use the tutor.</div>';return}
+ qi.value='';CHAT.push({role:'user',content:q});const ai={role:'assistant',content:'Thinking...'};CHAT.push(ai);chat.innerHTML=chatHtml();chat.scrollTop=chat.scrollHeight;
+ const lang=$('qlang').value,withSeq=$('qseq').checked&&S&&S.s&&!S.bad.length,turns=CHAT.slice(0,-1).map(m=>({role:m.role,content:m.content}));
+ turns[0].content='You are a friendly bioinformatics tutor for university students. Answer in '+langTxt(lang)+'. Keep answers under 150 words unless asked for more. If a question is not about biology, bioinformatics or related science, politely say you can only help with those topics. If you are unsure, say so.\n\nStudent: '+turns[0].content;
+ if(withSeq)turns[turns.length-1].content+='\n\n(The student has this DNA sequence loaded: '+S.s.slice(0,400)+')';
+ ACTL=new AbortController();$('qstop').hidden=false;$('qsend').disabled=true;
+ try{const r=await sm(turns,{signal:ACTL.signal,modelTier:'quick',cache:false,onText:({text})=>{ai.content=text;if(chat.isConnected){chat.innerHTML=chatHtml();chat.scrollTop=chat.scrollHeight}}});ai.content=r.text}
+ catch(e){ai.content=(e.text?e.text+'\n\n':'')+aiErr(e.code)}
+ finally{if(chat.isConnected){chat.innerHTML=chatHtml();chat.scrollTop=chat.scrollHeight;$('qsend').disabled=false;$('qstop').hidden=true}}}
+$('view').addEventListener('click',e=>{const t=e.target;if(t.id==='aibtn')askAI();else if(t.id==='aistop'||t.id==='qstop'){if(ACTL)ACTL.abort()}else if(t.id==='qsend')sendQ();else if(t.id==='qclr'){CHAT=[];tutorRender()}else if(t.dataset&&t.dataset.q){$('q').value=t.dataset.q;sendQ()}});
+$('view').addEventListener('keydown',e=>{if(e.target.id==='q'&&e.key==='Enter')sendQ()});
+function protView(){const p=P.toUpperCase().replace(/[^A-Z]/g,'').replace(/\*/g,'');const bad=[...new Set([...p].filter(a=>!MASS[a]))];
+ let body='<p class="empty">Enter a protein sequence above.</p>';
+ if(p&&bad.length)body='<p class="msg err">Unrecognised amino acid letters: '+bad.join(', ')+'.</p>';
+ else if(p){const c={};for(const a of p)c[a]=(c[a]||0)+1;const m=mw(p);body='<div class="stats"><div><small>Length</small><b>'+p.length+' aa</b></div><div><small>Molecular weight</small><b>'+(m/1000).toFixed(2)+' kDa</b></div><div><small>Weight (Da)</small><b>'+m.toFixed(1)+'</b></div></div><div class="sec">Amino acid composition</div><div class="scroll"><table><tr><th>Residue</th><th>Count</th><th>%</th></tr>'+Object.keys(c).sort().map(a=>'<tr><td class="m">'+a+'</td><td>'+c[a]+'</td><td>'+(c[a]/p.length*100).toFixed(1)+'</td></tr>').join('')+'</table></div><p class="note">Average molecular weight, calculated from residue masses plus one water.</p><div class="sec" style="margin:16px 0 6px">Diagram</div><div class="scroll">'+dgBars(c)+'</div><p class="note">Bar length shows how many times each amino acid occurs.</p>'+protAdv(p)+howInner('prot',protSteps(p,m))+'<div class="sec" style="margin:16px 0 6px">Watch it work</div>'+player('prot',frProt(p),p.length>12?'Showing the first 12 amino acids.':'')}
+ return body}
+function render(){Object.keys(PL).forEach(k=>{clearInterval(PL[k].t);PL[k].t=null});const sv=$('view');
+ $('side').innerHTML=GROUPS.map(([g,l])=>'<h3>'+g.toUpperCase()+'</h3>'+l.map(([id,t])=>'<a href="#/'+id+'" class="'+(id===cur?'on':'')+'">'+t+'</a>').join('')).join('');
+ if(cur==='tutor'){tutorRender();return}if(cur==='prot'){sv.innerHTML=panel(head('Protein properties','Length, molecular weight and composition of a protein sequence.'),'<label class="lab" for="pin">Protein sequence (one-letter codes)</label><textarea id="pin" spellcheck="false" placeholder="MAIVMGR">'+P+'</textarea><div class="bar"><button id="fromdna" type="button">Use frame 1 translation of the DNA above</button></div><div id="pout" style="margin-top:14px">'+protView()+'</div>');
+  $('pin').oninput=e=>{P=e.target.value;$('pout').innerHTML=protView()};
+  $('fromdna').onclick=()=>{if(S&&S.s&&!S.bad.length){P=tr(S.s,0).replace(/\*.*/,'');render()}};return}
+ if(!S.s){sv.innerHTML=panel(head((GROUPS.flatMap(g=>g[1]).find(x=>x[0]===cur)||[0,'Tool'])[1],'Enter a DNA sequence in the box above to begin.'),'<p class="empty">No sequence yet. Use "Load example" to try it.</p>');return}
+ if(S.bad.length){sv.innerHTML=panel(head('Invalid sequence',''),'<p class="msg err">These characters are not allowed: '+S.bad.join(', ')+'. Use only A, T, G, C and N.</p>');return}
+ if(cur==='align'){alignRender();return}sv.innerHTML=V[cur](S.s)+extra(cur,S.s);
+ const m=$('min');if(m)m.onchange=()=>{CP._min=Math.max(1,+m.value||30);render()}}
+function run(){S=parse();$('msg').className='msg'+(S.bad.length?' err':'');$('msg').textContent=S.s?(S.bad.length?'Invalid characters found':S.s.length+' bases'+(S.hadU?' (U treated as T)':'')):'';if(cur!=='prot'&&cur!=='tutor')render()}
+function route(){const id=location.hash.replace('#/','');cur=(GROUPS.flatMap(g=>g[1]).some(x=>x[0]===id)?id:'overview');S=parse();render();window.scrollTo(0,0)}
+$('view').addEventListener('click',async e=>{const b=e.target.closest('[data-copy]');if(!b)return;try{await navigator.clipboard.writeText(CP[b.dataset.copy]);b.textContent='Copied'}catch(_){b.textContent='Copy failed'}setTimeout(()=>b.textContent='Copy',1400)});
+$('seq').addEventListener('input',run);
+$('ex').onclick=()=>{$('seq').value='ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAGAATTCGGATCCAAGCTT';run()};
+$('clr').onclick=()=>{$('seq').value='';run();$('seq').focus()};
+$('up').onclick=()=>$('file').click();
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('seq').value=r.result;run()};r.readAsText(f)};
+window.addEventListener('hashchange',route);route();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>
