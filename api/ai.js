@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ error: "method_not_allowed" });
 
-  const key = process.env.GROQ_API_KEY;
+const key = "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";
   if (!key) return res.status(503).json({ error: "not_configured" });
 
   const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
