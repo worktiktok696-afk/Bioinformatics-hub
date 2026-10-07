@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bioinformatics Hub</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f3f6fb;--panel:#fff;--ink:#16222f;--mute:#5d6b7b;--line:#dbe3ee;--soft:#f6f8fc;--accent:#3454d1;--ok:#1a7f4b;--bad:#c2362f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b131d;--panel:#122030;--ink:#e6edf5;--mute:#93a4b8;--line:#243649;--soft:#0f1b29;--accent:#7b97ff;--ok:#4ccf8a;--bad:#ff7b72}}
+:root[data-theme="dark"]{--bg:#0b131d;--panel:#122030;--ink:#e6edf5;--mute:#93a4b8;--line:#243649;--soft:#0f1b29;--accent:#7b97ff;--ok:#4ccf8a;--bad:#ff7b72}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:30px 18px 70px}
+h1{font-size:2rem;line-height:1.15;margin:0 0 8px;font-weight:600}
+.sub{color:var(--mute);max-width:62ch;margin:0 0 20px}
+input,select,textarea{font:inherit;font-size:.95rem;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);max-width:100%}
+textarea{width:100%;min-height:90px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.88rem}
+button{font:inherit;font-size:.92rem;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 14px}
+button:hover{border-color:var(--accent)}button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#find{width:100%;max-width:420px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.f{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.f:hover{border-color:var(--accent)}
+.f .n{font:500 .8rem "IBM Plex Mono",monospace;color:var(--mute)}.f b{display:block;font-size:1.05rem;margin:2px 0}.f span.d{color:var(--mute);font-size:.9rem;display:block}
+.tag{display:inline-block;margin-top:8px;font-size:.78rem;padding:2px 8px;border-radius:99px;background:var(--soft);border:1px solid var(--line);color:var(--accent)}
+.back{display:inline-block;margin-bottom:14px;color:var(--accent);text-decoration:none}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.sec{font-weight:600;margin:0 0 8px}h3{margin:16px 0 6px;font-size:1rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips span{background:var(--soft);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:.88rem}
+ol,ul{margin:4px 0;padding-left:20px}li{margin:4px 0}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin:8px 0}.row label{font-size:.88rem;color:var(--mute);display:flex;flex-direction:column;gap:4px}
+table{border-collapse:collapse;font-size:.92rem;margin:8px 0}th,td{border:1px solid var(--line);padding:6px 12px;text-align:center}th{background:var(--soft)}
+.res{margin-top:10px}.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}.note{color:var(--mute);font-size:.85rem;margin:8px 0 0}
+.aiout{white-space:pre-wrap;margin-top:12px;line-height:1.6}.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.scroll{overflow-x:auto}svg text{fill:var(--ink);font:13px "IBM Plex Mono",monospace}svg line,svg path{stroke:var(--accent);stroke-width:2;fill:none}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const TK='toolkit/';
+const F=[
+['molbio','Molecular Biology','How DNA, RNA and proteins store and use genetic information.','Central dogma|DNA replication|Transcription|Translation|Gene regulation','NCBI Gene|UniProt|Ensembl|SnapGene|Benchling','',1],
+['genetics','Genetics','How traits are inherited and how variation passes between generations.','Mendel\'s laws|Alleles and genotypes|Hardy-Weinberg|Linkage|Mutations and SNPs','OMIM|ClinVar|dbSNP|gnomAD|PLINK','genetics'],
+['genomics','Genomics','Assembling, annotating and comparing whole genomes.','Genome assembly|Annotation|Variant calling|Comparative genomics|Pangenomes','UCSC Genome Browser|Ensembl|BLAST|SPAdes|Prokka','',1],
+['biochem','Biochemistry','The chemistry of life: proteins, enzymes and metabolism.','Amino acids and pH|Enzyme kinetics|Metabolic pathways|Protein folding|Thermodynamics','KEGG|BRENDA|PDB|ExPASy ProtParam|MetaCyc',''],
+['prog','Programming','The skills to automate analysis and build your own tools.','Python basics|Data structures|Biopython|R and Bioconductor|Git and the command line','Python|Biopython|Jupyter|RStudio|Git',''],
+['biostat','Biostatistics','Deciding whether a pattern in biological data is real.','Mean, SD and distributions|Hypothesis tests and p-values|Multiple testing|Regression|Confidence intervals','R|SciPy|statsmodels|GraphPad Prism|ggplot2','biostat'],
+['compbio','Computational Biology','Using models and algorithms to understand biological systems.','Dynamic programming|Hidden Markov models|Simulation|Graph theory|Molecular modelling','HMMER|GROMACS|NetworkX|COPASI|Rosetta',''],
+['seq','Sequence Analysis','Comparing and interpreting DNA, RNA and protein sequences.','Pairwise alignment|BLAST|Multiple alignment|Motifs and domains|Open reading frames','BLAST|Clustal Omega|MAFFT|EMBOSS|Pfam','',1],
+['struct','Structural Bioinformatics','Predicting and analysing 3D shapes of proteins and nucleic acids.','Protein structure levels|Homology modelling|Docking|Ramachandran plot|AlphaFold prediction','PDB|AlphaFold DB|PyMOL|ChimeraX|SWISS-MODEL',''],
+['ngs','Next-Generation Sequencing','High-throughput sequencing and the pipelines that process its data.','Illumina and nanopore|FASTQ and Phred scores|Alignment and coverage|Variant calling|RNA-seq','FastQC|BWA|SAMtools|GATK|STAR','ngs'],
+['phylo','Phylogenetics','Reconstructing evolutionary relationships as trees.','Distance methods|Maximum likelihood|Bootstrapping|Molecular clock|Rooted and unrooted trees','MEGA|IQ-TREE|RAxML|FigTree|iTOL','phylo'],
+['sysbio','Systems Biology','Understanding how parts of a cell work together as networks.','Gene regulatory networks|Metabolic networks|ODE models|Feedback loops|Flux balance analysis','COBRApy|COPASI|Cytoscape|BioModels|SBML',''],
+['ml','Machine Learning','Learning patterns from biological data to predict outcomes.','Supervised and unsupervised learning|Overfitting|Cross-validation|Feature selection|Deep learning','scikit-learn|PyTorch|TensorFlow|XGBoost|Hugging Face',''],
+['ds','Data Science','Cleaning, exploring and communicating large datasets.','Data cleaning|Exploratory analysis|Visualisation|Reproducible pipelines|Databases and SQL','pandas|Jupyter|ggplot2|Snakemake|SQL',''],
+['prot','Proteomics','Large-scale study of proteins and their modifications.','Mass spectrometry|Peptide identification|Post-translational modifications|Quantification|Protein interactions','MaxQuant|UniProt|PRIDE|Skyline|STRING','prot'],
+['tx','Transcriptomics','Measuring which genes are active and by how much.','RNA-seq|Normalisation (TPM)|Differential expression|Single-cell RNA-seq|Pathway enrichment','DESeq2|edgeR|STAR|Salmon|Seurat','tx'],
+['drug','Drug Discovery','Finding and designing molecules that can become medicines.','Target identification|Virtual screening|Molecular docking|ADMET|Lipinski rule of five','PubChem|ChEMBL|AutoDock Vina|RDKit|DrugBank','drug'],
+['biomed','Biomedical Informatics','Using data and computing to improve health and medicine.','Electronic health records|Clinical genomics|Ontologies (GO, HPO)|Data privacy|Precision medicine','ClinVar|OMIM|FHIR|cBioPortal|Bioconductor','']
+].map((a,i)=>({id:a[0],n:i+1,name:a[1],desc:a[2],c:a[3].split('|'),t:a[4].split('|'),tool:a[5],link:a[6]}));
+const MASS={G:57.0519,A:71.0788,S:87.0782,P:97.1167,V:99.1326,T:101.1051,C:103.1388,L:113.1594,I:113.1594,N:114.1038,D:115.0886,Q:128.1307,K:128.1741,E:129.1155,M:131.1926,H:137.1411,F:147.1766,R:156.1875,Y:163.176,W:186.2132};
+const val=id=>parseFloat($(id).value),nums=t=>t.split(/[\s,;]+/).map(Number).filter(x=>!isNaN(x)&&x!==undefined&&true);
+const nm=t=>t.split(/[\s,;]+/).filter(x=>x!=='').map(Number).filter(x=>!isNaN(x));
+const lg=x=>{const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;for(const k of c)s+=k/++y;return -t+Math.log(2.5066282746310005*s/x)};
+const tpdf=(t,v)=>Math.exp(lg((v+1)/2)-lg(v/2))/Math.sqrt(v*Math.PI)*Math.pow(1+t*t/v,-(v+1)/2);
+function pval(t,v){t=Math.abs(t);const N=2000,h=t/N;let s=tpdf(0,v)+tpdf(t,v);for(let i=1;i<N;i++)s+=tpdf(i*h,v)*(i%2?4:2);return Math.max(0,2*(1-(0.5+s*h/3)))}
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length,sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1))};
+function upgma(names,D){let cl=names.map(n=>({id:n,size:1,h:0})),d=D.map(r=>r.slice());
+ while(cl.length>1){let bi=0,bj=1,m=Infinity;for(let i=0;i<cl.length;i++)for(let j=i+1;j<cl.length;j++)if(d[i][j]<m){m=d[i][j];bi=i;bj=j}
+  const a=cl[bi],b=cl[bj],nc={size:a.size+b.size,h:m/2,l:a,r:b},keep=cl.map((_,k)=>k).filter(k=>k!==bi&&k!==bj),nd=keep.map(k=>keep.map(k2=>d[k][k2]));
+  keep.forEach((k,x)=>nd[x].push((d[bi][k]*a.size+d[bj][k]*b.size)/nc.size));nd.push([...keep.map((k,x)=>nd[x][nd[x].length-1]),0]);cl=keep.map(k=>cl[k]).concat([nc]);d=nd}
+ return cl[0]}
+function drawTree(root,n){const H=root.h||1,X=h=>20+(1-h/H)*300*(root.h?1:0)+(root.h?0:300),W=480;let li=0,o='';
+ (function go(t){if(!t.l){const y=24+li++*28;o+='<text x="'+(X(0)+8)+'" y="'+(y+4)+'">'+esc(t.id)+'</text>';return y}
+  const y1=go(t.l),y2=go(t.r),x=X(t.h);o+='<line x1="'+x+'" y1="'+y1+'" x2="'+x+'" y2="'+y2+'"/><line x1="'+x+'" y1="'+y1+'" x2="'+X(t.l.h)+'" y2="'+y1+'"/><line x1="'+x+'" y1="'+y2+'" x2="'+X(t.r.h)+'" y2="'+y2+'"/>';return(y1+y2)/2})(root);
+ return '<div class="scroll"><svg viewBox="0 0 '+W+' '+(n*28+30)+'" style="width:100%;max-width:560px" role="img" aria-label="Phylogenetic tree">'+o+'</svg></div>'}
+const EX_FA='>Human\nATGGCCATTGTAATGGGCCGCTGA\n>Chimp\nATGGCCATTGTAATGGGCCGCTGA\n>Gorilla\nATGGCCATCGTAATGGGCCGTTGA\n>Mouse\nATGGCTATTGTCATGGGACGTTGA\n>Chicken\nATGGCAATTGTCCTGGGACGATGA';
+const TOOLS={
+genetics:{t:'Punnett square and Hardy-Weinberg',h:`<div class="row"><label>Parent 1 genotype<input id="g1" value="Aa" maxlength="2" size="4"></label><label>Parent 2 genotype<input id="g2" value="Aa" maxlength="2" size="4"></label></div><div id="go" class="res"></div><h3>Hardy-Weinberg</h3><div class="row"><label>Allele frequency q (0 to 1)<input id="hq" type="number" step="0.01" min="0" max="1" value="0.2"></label></div><div id="ho" class="res"></div>`,
+ init(){const r1=()=>{const a=$('g1').value,b=$('g2').value,o=$('go');if(!/^[A-Za-z]{2}$/.test(a)||!/^[A-Za-z]{2}$/.test(b)||a.toLowerCase()[0]!==b.toLowerCase()[0]&&a.toLowerCase()[1]!==b.toLowerCase()[1]&&a.toLowerCase()[0]!==b.toLowerCase()[1]){o.innerHTML='<p class="note">Enter two genotypes of one gene, like Aa and Aa (capital = dominant).</p>';return}
+  const g=(x,y)=>[x,y].sort().join(''),cnt={};let h='<table><tr><th></th><th>'+b[0]+'</th><th>'+b[1]+'</th></tr>';
+  for(const x of a){h+='<tr><th>'+x+'</th>';for(const y of b){const k=g(x,y);cnt[k]=(cnt[k]||0)+1;h+='<td>'+k+'</td>'}h+='</tr>'}
+  let dom=0;for(const k in cnt)if(/[A-Z]/.test(k))dom+=cnt[k];
+  o.innerHTML=h+'</table><p>Genotypes: '+Object.keys(cnt).map(k=>k+' '+cnt[k]+'/4').join(', ')+'.<br>Phenotypes: '+dom+'/4 dominant, '+(4-dom)+'/4 recessive.</p>'};
+  const r2=()=>{const q=val('hq'),o=$('ho');if(!(q>=0&&q<=1)){o.textContent='q must be between 0 and 1.';return}const p=1-q;o.innerHTML='<table><tr><th>p (A)</th><th>q (a)</th><th>AA (p\u00b2)</th><th>Aa (2pq)</th><th>aa (q\u00b2)</th></tr><tr><td>'+p.toFixed(3)+'</td><td>'+q.toFixed(3)+'</td><td>'+(p*p*100).toFixed(1)+'%</td><td>'+(2*p*q*100).toFixed(1)+'%</td><td>'+(q*q*100).toFixed(1)+'%</td></tr></table><p class="note">Assumes a large, randomly mating population with no selection, mutation or migration.</p>'};
+  ['g1','g2'].forEach(i=>$(i).oninput=r1);$('hq').oninput=r2;r1();r2()}},
+biostat:{t:'Two-group t-test (Welch)',h:`<div class="row" style="align-items:stretch"><label style="flex:1;min-width:200px">Group A (numbers separated by spaces or commas)<textarea id="ba">5.1 4.8 5.6 5.0 4.9 5.3</textarea></label><label style="flex:1;min-width:200px">Group B<textarea id="bb">6.0 5.8 6.4 6.1 5.9 6.5</textarea></label></div><div id="bo" class="res"></div>`,
+ init(){const r=()=>{const a=nm($('ba').value),b=nm($('bb').value),o=$('bo');if(a.length<2||b.length<2){o.innerHTML='<p class="note">Each group needs at least 2 numbers.</p>';return}
+  const ma=mean(a),mb=mean(b),sa=sd(a),sb=sd(b),va=sa*sa/a.length,vb=sb*sb/b.length,se=Math.sqrt(va+vb),t=(ma-mb)/se,df=(va+vb)**2/(va*va/(a.length-1)+vb*vb/(b.length-1)),p=se?pval(t,df):1;
+  o.innerHTML='<table><tr><th></th><th>n</th><th>Mean</th><th>SD</th></tr><tr><th>A</th><td>'+a.length+'</td><td>'+ma.toFixed(3)+'</td><td>'+sa.toFixed(3)+'</td></tr><tr><th>B</th><td>'+b.length+'</td><td>'+mb.toFixed(3)+'</td><td>'+sb.toFixed(3)+'</td></tr></table><p>t = <b>'+t.toFixed(3)+'</b>, df = '+df.toFixed(1)+', two-sided p = <b>'+(p<0.0001?'< 0.0001':p.toFixed(4))+'</b><br><span class="'+(p<0.05?'ok':'bad')+'">'+(p<0.05?'The difference is statistically significant at 0.05.':'No significant difference at 0.05.')+'</span></p><p class="note">Significance does not tell you the difference is large or important. Check the means and sample sizes too.</p>'};
+  ['ba','bb'].forEach(i=>$(i).oninput=r);r()}},
+ngs:{t:'Phred quality and sequencing coverage',h:`<div class="row"><label>Phred score Q<input id="nq" type="number" value="30" min="0" max="60"></label></div><div id="nqo" class="res"></div><h3>Coverage</h3><div class="row"><label>Genome size (Mb)<input id="ng" type="number" value="3100"></label><label>Read length (bp)<input id="nl" type="number" value="150"></label><label>Number of reads (millions)<input id="nr" type="number" value="600"></label></div><div id="nco" class="res"></div>`,
+ init(){const a=()=>{const q=val('nq'),p=Math.pow(10,-q/10);$('nqo').innerHTML=isNaN(q)?'':'Q'+q+' means an error probability of <b>'+(p<0.0001?p.toExponential(1):p.toFixed(4))+'</b> ('+((1-p)*100).toFixed(q>=40?4:2)+'% base-call accuracy).'};
+  const b=()=>{const g=val('ng')*1e6,l=val('nl'),n=val('nr')*1e6;if(!(g>0&&l>0&&n>0)){$('nco').textContent='';return}const c=n*l/g;$('nco').innerHTML='Mean coverage = reads x length / genome = <b>'+c.toFixed(1)+'x</b>. Expected fraction of the genome covered at least once: <b>'+((1-Math.exp(-c))*100).toFixed(2)+'%</b> (Lander-Waterman).'};
+  ['nq'].forEach(i=>$(i).oninput=a);['ng','nl','nr'].forEach(i=>$(i).oninput=b);a();b()}},
+phylo:{t:'UPGMA tree from sequences',h:`<label>Aligned sequences (FASTA, same length)<textarea id="pf" style="min-height:150px">${EX_FA}</textarea></label><div class="row"><button class="pri" id="pb" type="button">Build tree</button></div><div id="po" class="res"></div>`,
+ init(){const r=()=>{const recs=$('pf').value.split('>').map(x=>x.trim()).filter(Boolean).map(x=>{const l=x.split('\n');return{n:l[0].trim().slice(0,16),s:l.slice(1).join('').toUpperCase().replace(/\s/g,'')}}),o=$('po');
+  if(recs.length<3||recs.length>10){o.innerHTML='<p class="note">Use 3 to 10 sequences.</p>';return}const L=Math.min(...recs.map(x=>x.s.length));if(L<5){o.innerHTML='<p class="note">Sequences are too short.</p>';return}
+  const D=recs.map(a=>recs.map(b=>{let m=0;for(let i=0;i<L;i++)if(a.s[i]!==b.s[i])m++;return m/L}));
+  o.innerHTML='<div class="scroll"><table><tr><th></th>'+recs.map(x=>'<th>'+esc(x.n)+'</th>').join('')+'</tr>'+recs.map((x,i)=>'<tr><th>'+esc(x.n)+'</th>'+D[i].map(v=>'<td>'+v.toFixed(3)+'</td>').join('')+'</tr>').join('')+'</table></div><p class="note">p-distance = fraction of different positions (first '+L+' bases used).</p>'+drawTree(upgma(recs.map(x=>esc(x.n)),D),recs.length)+'<p class="note">UPGMA joins the two closest groups step by step and assumes a constant evolutionary rate. Branch length is half the distance.</p>'};
+  $('pb').onclick=r;r()}},
+prot:{t:'Trypsin digest and peptide masses',h:`<label>Protein sequence<textarea id="tp">MKWVTFISLLFLFSSAYSRGVFRRDAHKSEVAHRFKDLGEENFKALVLIAFAQYLQQCPFEDHVK</textarea></label><div class="row"><label>Missed cleavages<select id="tm"><option>0</option><option>1</option><option>2</option></select></label><label>Minimum length<input id="tl" type="number" value="4" style="width:80px"></label></div><div id="to" class="res"></div>`,
+ init(){const r=()=>{const p=$('tp').value.toUpperCase().replace(/[^A-Z]/g,''),mc=+$('tm').value,ml=val('tl')||1,o=$('to');if(!p){o.innerHTML='';return}
+  const cuts=[0];for(let i=0;i<p.length-1;i++)if((p[i]==='K'||p[i]==='R')&&p[i+1]!=='P')cuts.push(i+1);cuts.push(p.length);const rows=[];
+  for(let i=0;i<cuts.length-1;i++)for(let k=0;k<=mc&&i+k<cuts.length-1;k++){const s=p.slice(cuts[i],cuts[i+k+1]);if(s.length>=ml)rows.push([s,k,[...s].reduce((t,a)=>t+(MASS[a]||0),18.01524)])}
+  o.innerHTML='<p>'+rows.length+' peptides (trypsin cuts after K or R, not before P).</p><div class="scroll"><table><tr><th>Peptide</th><th>Length</th><th>Missed</th><th>Mass (Da)</th></tr>'+rows.slice(0,40).map(x=>'<tr><td class="mono">'+x[0]+'</td><td>'+x[0].length+'</td><td>'+x[1]+'</td><td>'+x[2].toFixed(2)+'</td></tr>').join('')+'</table></div>'+(rows.length>40?'<p class="note">Showing the first 40.</p>':'')+'<p class="note">Average masses. Mass spectrometers compare these values with measured peaks to identify proteins.</p>'};
+  ['tp','tm','tl'].forEach(i=>$(i).oninput=r);r()}},
+tx:{t:'Fold change and TPM',h:`<div class="row"><label>Control expression<input id="xc" type="number" value="120"></label><label>Treated expression<input id="xt" type="number" value="480"></label></div><div id="xo" class="res"></div><h3>TPM from read counts</h3><label>One gene per line: name, count, length in bp<textarea id="xg">GeneA,500,2000\nGeneB,1500,3000\nGeneC,200,500\nGeneD,40,1000</textarea></label><div id="xgo" class="res"></div>`,
+ init(){const a=()=>{const c=val('xc'),t=val('xt');$('xo').innerHTML=isNaN(c)||isNaN(t)||c<0||t<0?'':'log2 fold change = log2((treated + 1) / (control + 1)) = <b>'+Math.log2((t+1)/(c+1)).toFixed(2)+'</b> ('+(t>c?'up':t<c?'down':'no change')+'regulated, '+((t+1)/(c+1)).toFixed(2)+'x). The +1 avoids dividing by zero.'};
+  const b=()=>{const g=$('xg').value.split('\n').map(l=>l.split(',').map(x=>x.trim())).filter(x=>x.length>=3&&+x[1]>=0&&+x[2]>0),o=$('xgo');if(!g.length){o.textContent='';return}
+   const rpk=g.map(x=>x[1]/(x[2]/1000)),sum=rpk.reduce((x,y)=>x+y,0);o.innerHTML='<table><tr><th>Gene</th><th>Count</th><th>Length</th><th>TPM</th></tr>'+g.map((x,i)=>'<tr><td>'+esc(x[0])+'</td><td>'+x[1]+'</td><td>'+x[2]+'</td><td>'+(rpk[i]/sum*1e6).toFixed(1)+'</td></tr>').join('')+'</table><p class="note">TPM = (count / length in kb) scaled so all genes add up to 1,000,000. This makes genes and samples comparable.</p>'};
+  ['xc','xt'].forEach(i=>$(i).oninput=a);$('xg').oninput=b;a();b()}},
+drug:{t:"Lipinski's rule of five",h:`<div class="row"><label>Molecular weight (Da)<input id="dm" type="number" value="420"></label><label>logP<input id="dl" type="number" step="0.1" value="3.2"></label><label>H-bond donors<input id="dd" type="number" value="2"></label><label>H-bond acceptors<input id="da" type="number" value="6"></label></div><div id="do" class="res"></div>`,
+ init(){const r=()=>{const v=[['Molecular weight','dm',500,' Da'],['logP','dl',5,''],['H-bond donors','dd',5,''],['H-bond acceptors','da',10,'']].map(([n,i,m,u])=>({n,x:val(i),m,u}));if(v.some(x=>isNaN(x.x))){$('do').textContent='';return}
+  const bad=v.filter(x=>x.x>x.m).length;$('do').innerHTML='<table><tr><th>Property</th><th>Value</th><th>Limit</th><th></th></tr>'+v.map(x=>'<tr><td>'+x.n+'</td><td>'+x.x+x.u+'</td><td>\u2264 '+x.m+'</td><td class="'+(x.x>x.m?'bad':'ok')+'">'+(x.x>x.m?'violates':'passes')+'</td></tr>').join('')+'</table><p><b>'+bad+'</b> violation'+(bad===1?'':'s')+': <span class="'+(bad<=1?'ok':'bad')+'">'+(bad<=1?'likely to be orally drug-like.':'poor oral drug-likeness is likely.')+'</span></p><p class="note">A rough filter for oral drugs, not a rule. Many successful drugs break it.</p>'};
+  ['dm','dl','dd','da'].forEach(i=>$(i).oninput=r);r()}}
+};
+let ACTL=null,CUR=null;
+async function askAI(q){const out=$('aiout');if(!q||!CUR)return;
+ if(ACTL)ACTL.abort();ACTL=new AbortController();$('aask').disabled=true;$('astop').hidden=false;out.textContent='Thinking...';
+ try{const r=await fetch('api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,topic:CUR.name,lang:$('alang').value}),signal:ACTL.signal});
+  const d=await r.json().catch(()=>({}));
+  out.textContent=r.ok&&d.text?d.text:r.status===429?'Too many questions. Please wait a few minutes and try again.':r.status===503?'The AI tutor is not set up on this site yet.':'The AI tutor could not answer right now. Please try again.'}
+ catch(e){out.textContent=e.name==='AbortError'?'(stopped)':'Could not reach the AI tutor. Check your internet connection. The tutor only works on the live website.'}
+ finally{if($('aask')){$('aask').disabled=false;$('astop').hidden=true}}}
+function home(q){q=(q||'').toLowerCase();const L=F.filter(f=>!q||(f.name+' '+f.desc+' '+f.c.join(' ')+' '+f.t.join(' ')).toLowerCase().includes(q));
+ return L.map(f=>'<a class="f" href="#/'+f.id+'"><span class="n">'+String(f.n).padStart(2,'0')+'</span><b>'+f.name+'</b><span class="d">'+f.desc+'</span>'+(f.tool?'<span class="tag">Live tool</span>':f.link?'<span class="tag">Sequence Toolkit</span>':'<span class="tag" style="color:var(--mute)">Guide + AI tutor</span>')+'</a>').join('')||'<p class="note">No field matches that search.</p>'}
+function render(){const id=location.hash.replace('#/',''),f=F.find(x=>x.id===id),app=$('app');CUR=f||null;
+ if(ACTL)ACTL.abort();
+ if(!f){app.innerHTML='<h1>Bioinformatics Hub</h1><p class="sub">One place to learn and practise the 18 core areas of bioinformatics. Pick a field for a short guide, a roadmap, working mini tools and an AI tutor.</p><input id="find" type="search" placeholder="Search fields, tools or topics" aria-label="Search"><div class="grid" id="grid">'+home()+'</div>';
+  $('find').oninput=e=>$('grid').innerHTML=home(e.target.value);window.scrollTo(0,0);return}
+ const T=TOOLS[f.tool],i=F.indexOf(f),nx=F[(i+1)%F.length],pv=F[(i+F.length-1)%F.length];
+ app.innerHTML='<a class="back" href="#/">\u2190 All 18 fields</a><h1>'+f.n+'. '+f.name+'</h1><p class="sub">'+f.desc+'</p>'+
+ '<div class="cols"><div class="panel"><div class="sec">Key concepts</div><div class="chips">'+f.c.map(x=>'<span>'+x+'</span>').join('')+'</div></div><div class="panel"><div class="sec">Tools and databases</div><div class="chips">'+f.t.map(x=>'<span>'+x+'</span>').join('')+'</div></div></div>'+
+ '<div class="panel"><div class="sec">Learning path</div><ol><li>Start with '+f.c[0]+' and '+f.c[1]+'.</li><li>Open '+f.t[0]+' and '+f.t[1]+' and explore a real example.</li><li>'+(T?'Try the mini tool below with your own numbers.':'Pick one small question and answer it with '+f.t[2]+'.')+'</li><li>Go deeper: '+f.c.slice(2).join(', ')+'.</li></ol></div>'+
+ (T?'<div class="panel"><div class="sec">Try it: '+T.t+'</div>'+T.h+'</div>':'')+
+ (f.link?'<div class="panel"><div class="sec">Practise here</div><p style="margin:0 0 10px">DNA and protein tools with animations, alignment and diagrams are in the Sequence Toolkit.</p><a href="'+TK+'"><button class="pri" type="button">Open Sequence Toolkit</button></a></div>':'')+
+ '<div class="panel"><div class="sec">Ask the AI tutor about '+f.name+'</div><div class="row" style="margin-top:0">'+['Explain '+f.name+' in simple words','Give me a 4-week study plan','Suggest a small project I can do'].map(q=>'<button type="button" data-q="'+q+'">'+q+'</button>').join('')+'</div><div class="row"><input id="aq" placeholder="Type your own question" style="flex:1;min-width:200px" aria-label="Question"><select id="alang" aria-label="Language"><option>English</option><option>Roman Urdu</option></select><button class="pri" id="aask" type="button">Ask</button><button id="astop" type="button" hidden>Stop</button></div><div id="aiout" class="aiout" aria-live="polite"></div><p class="note">AI can make mistakes. Check important facts with your teacher or textbook. Do not type personal information: questions are sent to an AI service.</p></div>'+
+ '<div class="row" style="justify-content:space-between"><a class="back" href="#/'+pv.id+'">\u2190 '+pv.name+'</a><a class="back" href="#/'+nx.id+'">'+nx.name+' \u2192</a></div>';
+ if(T)T.init();window.scrollTo(0,0)}
+document.addEventListener('click',e=>{const t=e.target;if(t.dataset&&t.dataset.q){$('aq').value=t.dataset.q;askAI(t.dataset.q)}else if(t.id==='aask')askAI($('aq').value.trim());else if(t.id==='astop'&&ACTL)ACTL.abort()});
+document.addEventListener('keydown',e=>{if(e.target.id==='aq'&&e.key==='Enter')askAI(e.target.value.trim())});
+window.addEventListener('hashchange',render);render();
+</script>
+</body>
+</html>
