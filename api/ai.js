@@ -1,10 +1,7 @@
 // Vercel serverless function: the AI tutor.
-// The Groq API key lives ONLY in the GROQ_API_KEY environment variable on the server.
-// It is never written in any file and never sent to the browser.
-
 const hits = new Map();
 const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-const MAX_PER_WINDOW = 15;        // questions per person per window (best effort)
+const MAX_PER_WINDOW = 15;
 
 function limited(ip) {
   const now = Date.now();
@@ -28,18 +25,27 @@ module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ error: "method_not_allowed" });
 
-const key = "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";
-  if (!key) return res.status(503).json({ error: "not_configured" });
+  // ✅ CHANGE 1: Environment variable use karein. Agar local test kar rahe hain toh .env.local mein GROQ_API_KEY="your_new_key" dalein
+  const key = process.env.GROQ_API_KEY; 
+  
+  if (!key) {
+    console.error("❌ ERROR: GROQ_API_KEY is missing!");
+    return res.status(503).json({ error: "API Key missing on server" });
+  }
 
   const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
   if (limited(ip)) return res.status(429).json({ error: "rate_limited" });
 
   let body = req.body;
-  if (typeof body === "string") { try { body = JSON.parse(body); } catch { body = {}; } }
+  if (typeof body === "string") { 
+    try { body = JSON.parse(body); } 
+    catch { body = {}; } 
+  }
   body = body || {};
 
   const question = String(body.question || "").trim().slice(0, 500);
   if (!question) return res.status(400).json({ error: "empty_question" });
+  
   const topic = String(body.topic || "bioinformatics").slice(0, 60).replace(/[^\w\s().,&-]/g, "");
   const language = body.lang === "Roman Urdu"
     ? "Roman Urdu (Urdu written in English letters), keeping technical terms in English"
@@ -48,11 +54,14 @@ const key = "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";
   try {
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + key },
+      headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": "Bearer " + key 
+      },
       body: JSON.stringify({
-        model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+        model: "llama-3.1-70b-versatile", // ✅ CHANGE 2: Ye model zyada stable hai. Agar kaam na kare toh "llama3-70b-8192" try karein
         temperature: 0.4,
-        max_tokens: 450,
+        max_tokens: 500,
         messages: [
           { role: "system", content: SYSTEM + " Current topic: " + topic + ". Answer in " + language + "." },
           { role: "user", content: question }
@@ -60,16 +69,29 @@ const key = "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";
       }),
       signal: AbortSignal.timeout(25000)
     });
+
+    // ✅ CHANGE 3: Ab ye asal error message padh kar console mein dikhayega
     if (!r.ok) {
-      console.error("Groq error status:", r.status);
-      return res.status(502).json({ error: "upstream_error" });
+      const errorText = await r.text(); // Groq ka exact error yahan ayega
+      console.error("❌ Groq API Failed:", r.status, errorText);
+      return res.status(r.status).json({ 
+        error: "upstream_error", 
+        details: errorText // Frontend ko bhi exact error bhej dega debugging ke liye
+      });
     }
+
     const data = await r.json();
-    const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    if (!text) return res.status(502).json({ error: "empty_answer" });
+    const text = data?.choices?.[0]?.message?.content;
+    
+    if (!text) {
+      console.error("❌ Groq returned empty answer:", data);
+      return res.status(502).json({ error: "empty_answer" });
+    }
+
     return res.status(200).json({ text: String(text).trim() });
+
   } catch (e) {
-    console.error("AI function error:", e && e.name);
-    return res.status(504).json({ error: "timeout_or_network" });
+    console.error("❌ AI function crash:", e.message || e);
+    return res.status(504).json({ error: "timeout_or_network", details: e.message });
   }
 };
