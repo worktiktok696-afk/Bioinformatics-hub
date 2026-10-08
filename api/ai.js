@@ -22,15 +22,21 @@ const SYSTEM = [
 ].join(" ");
 
 module.exports = async (req, res) => {
+  // CORS headers add kiye hain taake koi blocking na ho
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Cache-Control", "no-store");
+
+  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "method_not_allowed" });
 
-  // ✅ CHANGE 1: Environment variable use karein. Agar local test kar rahe hain toh .env.local mein GROQ_API_KEY="your_new_key" dalein
+  // 1. API Key Check
   const key = process.env.GROQ_API_KEY; 
   
   if (!key) {
-    console.error("❌ ERROR: GROQ_API_KEY is missing!");
-    return res.status(503).json({ error: "API Key missing on server" });
+    console.error("❌ CRITICAL ERROR: GROQ_API_KEY is missing in Vercel Environment Variables!");
+    return res.status(503).json({ error: "API Key missing on server. Please set GROQ_API_KEY in Vercel." });
   }
 
   const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
@@ -52,6 +58,7 @@ module.exports = async (req, res) => {
     : "simple English";
 
   try {
+    // 2. Groq API Call
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { 
@@ -59,7 +66,7 @@ module.exports = async (req, res) => {
         "Authorization": "Bearer " + key 
       },
       body: JSON.stringify({
-        model: "llama-3.1-70b-versatile", // ✅ CHANGE 2: Ye model zyada stable hai. Agar kaam na kare toh "llama3-70b-8192" try karein
+        model: "llama-3.3-70b-versatile", // ✅ Ye sabse latest aur stable model hai
         temperature: 0.4,
         max_tokens: 500,
         messages: [
@@ -70,13 +77,13 @@ module.exports = async (req, res) => {
       signal: AbortSignal.timeout(25000)
     });
 
-    // ✅ CHANGE 3: Ab ye asal error message padh kar console mein dikhayega
+    // 3. Exact Error Logging (Ab humein pata chalega masla kya hai)
     if (!r.ok) {
-      const errorText = await r.text(); // Groq ka exact error yahan ayega
-      console.error("❌ Groq API Failed:", r.status, errorText);
+      const errorText = await r.text(); 
+      console.error("❌ Groq API Failed with Status:", r.status, "Details:", errorText);
       return res.status(r.status).json({ 
         error: "upstream_error", 
-        details: errorText // Frontend ko bhi exact error bhej dega debugging ke liye
+        details: errorText 
       });
     }
 
@@ -84,7 +91,7 @@ module.exports = async (req, res) => {
     const text = data?.choices?.[0]?.message?.content;
     
     if (!text) {
-      console.error("❌ Groq returned empty answer:", data);
+      console.error("❌ Groq returned empty answer:", JSON.stringify(data));
       return res.status(502).json({ error: "empty_answer" });
     }
 
